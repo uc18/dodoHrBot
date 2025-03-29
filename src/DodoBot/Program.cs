@@ -7,7 +7,8 @@ var c = builder.Configuration;
 
 builder.Services.Configure<ApplicationOptions>(c.GetSection(nameof(ApplicationOptions)));
 builder.Services.AddScoped<MessageService>();
-builder.Services.AddHostedService<TelegramBotBackgroundService>();
+builder.Services.AddHostedService<TelegramMessageService>();
+builder.Services.AddHostedService<HrPlatformSyncService>();
 builder.Services.AddHttpClient();
 
 var app = builder.Build();

@@ -2,12 +2,12 @@ using DodoBot.Services;
 
 namespace DodoBot.BackgroundServices;
 
-public class TelegramBotBackgroundService : BackgroundService
+public class TelegramMessageService : BackgroundService
 {
     private readonly IServiceProvider _provider;
     private long _offset;
 
-    public TelegramBotBackgroundService(IServiceProvider provider)
+    public TelegramMessageService(IServiceProvider provider)
     {
         _provider = provider;
     }
@@ -23,8 +23,8 @@ public class TelegramBotBackgroundService : BackgroundService
 
     private async Task DoAsync(CancellationToken stoppingToken)
     {
-        var t = _provider.CreateScope();
-        var messageService = t.ServiceProvider.GetRequiredService<MessageService>();
+        var scope = _provider.CreateScope();
+        var messageService = scope.ServiceProvider.GetRequiredService<MessageService>();
 
         var update = await messageService.CheckNewUpdate(_offset);
 
