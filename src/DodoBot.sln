@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DodoBot", ".\DodoBot\DodoBot.csproj", "{91C54AD9-320D-4A89-9A9D-B9D5AA303DF4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramLibrary", ".\TelegramLibrary\TelegramLibrary.csproj", "{04A739EF-4AAF-44F5-B3B0-A9CC81D248D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository", "Repository\Repository.csproj", "{766F21AB-F750-43DC-836F-3834446BD737}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{91C54AD9-320D-4A89-9A9D-B9D5AA303DF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91C54AD9-320D-4A89-9A9D-B9D5AA303DF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91C54AD9-320D-4A89-9A9D-B9D5AA303DF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91C54AD9-320D-4A89-9A9D-B9D5AA303DF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04A739EF-4AAF-44F5-B3B0-A9CC81D248D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04A739EF-4AAF-44F5-B3B0-A9CC81D248D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04A739EF-4AAF-44F5-B3B0-A9CC81D248D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04A739EF-4AAF-44F5-B3B0-A9CC81D248D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{766F21AB-F750-43DC-836F-3834446BD737}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{766F21AB-F750-43DC-836F-3834446BD737}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{766F21AB-F750-43DC-836F-3834446BD737}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{766F21AB-F750-43DC-836F-3834446BD737}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
