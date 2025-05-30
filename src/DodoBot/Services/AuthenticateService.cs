@@ -33,9 +33,9 @@ public class AuthenticateService : IAuthenticateService
         HuntflowDodoBrandsApiUrl = options.Value.HuntflowApiUrl;
     }
 
-    public async Task<string> GetRefreshToken()
+    public async Task<string> GetRefreshToken(bool isTokenExpired = false)
     {
-        if (_expirationDate < DateTime.UtcNow)
+        if (_expirationDate < DateTime.UtcNow || false)
         {
             var content = JsonContent.Create(new TokenRequest
             {
@@ -57,7 +57,7 @@ public class AuthenticateService : IAuthenticateService
                 {
                     AccessToken = tokenResponse.AccessToken;
                     RefreshToken = tokenResponse.RefreshToken;
-                    _expirationDate = DateTime.UtcNow.AddMilliseconds(tokenResponse.AccessTokenExpiration);
+                    _expirationDate = DateTime.UtcNow.AddSeconds(tokenResponse.AccessTokenExpiration);
 
                     return AccessToken;
                 }

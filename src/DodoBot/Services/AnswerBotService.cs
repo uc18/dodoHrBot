@@ -95,28 +95,30 @@ public class AnswerBotService
             }
             case "timingNotify":
             {
-                var button = _buttonProvider.Ffff34();
+                var button = _buttonProvider.ButtonTimingView();
                 await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                     callbackQuery.Message.MessageId, "еееее", button);
                 break;
             }
             case "subscribe":
             {
-                var button = _buttonProvider.Ffff2();
+                var button = _buttonProvider.ButtonForSetTiming();
                 await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                     callbackQuery.Message.MessageId, "Выбери частоту", button);
                 break;
             }
-            case "sendVacancies":
+            case "1":
+            case "2":
+            case "3":
             {
-                await _messageService.SendMessageToUser(callbackQuery.Message.Chat.Id,
-                    "Данная возможность пока недоступна");
+                await _messageService.SendMessageToUser(callbackQuery.Message.Chat.Id, "Поздравляю!");
                 break;
             }
             case "specialty":
             {
-                var splittedData = callbackQuery.Data.Split("-");
-                if (splittedData[1].Equals("55"))
+                var user = _userContextProvider.GetCandidateContext(callbackQuery.User.Id);
+                const string dodoEngineeringSpecialty = "55";
+                if (sp[1].Equals(dodoEngineeringSpecialty))
                 {
                     var subSpecialtyResponse = await _huntflowService.GetDodoSubSpecialtyAsync();
                     if (subSpecialtyResponse != null)
@@ -131,8 +133,6 @@ public class AnswerBotService
                         await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                             callbackQuery.Message.MessageId, "Выбери стрим: ", buttons);
 
-                        var user = _userContextProvider.GetCandidateContext(callbackQuery.User.Id);
-
                         if (user != null)
                         {
                             if (int.TryParse(callbackQuery.Data, out var streamId))
@@ -144,182 +144,63 @@ public class AnswerBotService
                 }
                 else
                 {
-                    var cityFormat = await _huntflowService.GetCityResponseAsync();
-                    var gradeResponse = await _huntflowService.GetGradeResponseAsync();
-                    var workFormat = await _huntflowService.GetWorkFormatAsync();
-                    var subSpecialtyResponse = await _huntflowService.GetDodoSubSpecialtyAsync();
-                    var dodoStreams = await _huntflowService.GetDodoStreamAsync();
-
-                    var pages = 1;
-                    int totalPages = 0;
-                    var notSortedVacancy = await _huntflowService.GetVacanciesAsync(pages);
-
-                    var allVacancies = new List<Vacancy>();
-
-                    if (notSortedVacancy != null)
-                    {
-                        allVacancies.AddRange(notSortedVacancy.Vacancies);
-                        if (notSortedVacancy.TotalPages > pages)
-                        {
-                            do
-                            {
-                                pages++;
-                                var addingVacancy = await _huntflowService.GetVacanciesAsync(pages);
-
-                                if (addingVacancy != null)
-                                {
-                                    allVacancies.AddRange(addingVacancy.Vacancies);
-                                    totalPages = addingVacancy.TotalPages;
-                                }
-                            } while (totalPages > pages);
-                        }
-                    }
-
-                    var activeSpecialty = new Dictionary<int, string>();
-                    var activeStream = new Dictionary<int, string>();
-                    var activeGrades = new Dictionary<int, string>();
-                    var activeWorkFormat = new Dictionary<int, string>();
-
-                    if (subSpecialtyResponse != null)
-                    {
-                        activeSpecialty = subSpecialtyResponse
-                            .Fields
-                            .Where(t => t.Active)
-                            .ToDictionary(t => t.Id, t => t.Name);
-                    }
-
-                    if (dodoStreams != null)
-                    {
-                        activeStream = dodoStreams
-                            .Fields
-                            .Where(t => t.Active)
-                            .ToDictionary(t => t.Id, t => t.Name);
-                    }
-
-                    if (gradeResponse != null)
-                    {
-                        activeGrades = gradeResponse
-                            .Fields
-                            .Where(t => t.Active)
-                            .ToDictionary(t => t.Id, t => t.Name);
-                    }
-
-                    if (workFormat != null)
-                    {
-                        activeWorkFormat = workFormat
-                            .Fields
-                            .Where(t => t.Active)
-                            .ToDictionary(t => t.Id, t => t.Name);
-                    }
-
                     var backMainMenuButton = _buttonProvider.GetBackMenuButton();
-                    if (splittedData[0].ToLower().Equals(Subspecialty.ToLower()))
+
+                    if (int.TryParse(sp[1], out var specialtyId))
                     {
-                        if (int.TryParse(splittedData[1], out var subSpecialtyId))
+                        var vacancy = await GetVacancyTextAsync(specialtyId, false);
+                        if (user != null)
                         {
-                            var sortedVacancy = allVacancies
-                                .Where(t => t.Speciality == 55 && t.SubSpeciality == subSpecialtyId
-                                                               && t.CareerPublication == 46)
-                                .ToList();
+                            user.Speciality = specialtyId;
+                        }
 
-                            if (cityFormat != null)
-                            {
-                                var cityDictionary = cityFormat.Fields.ToDictionary(t => t.Id, t => t.Name);
-                                if (sortedVacancy.Count > 0)
-                                {
-                                    var vacancyToText = sortedVacancy.Select(t => new VacancyDto
-                                        {
-                                            Id = t.Id,
-                                            Speciality = t.Speciality.HasValue
-                                                ? activeStream[t.Speciality.Value]
-                                                : null,
-                                            SubSpeciality = t.SubSpeciality.HasValue
-                                                ? activeSpecialty[t.SubSpeciality.Value]
-                                                : null,
-                                            VacancyCity = t.VacancyCity
-                                                .Select(b => cityDictionary[b])
-                                                .BuildCommaString(),
-                                            Position = t.Position ?? string.Empty,
-                                            Money = t.Money ?? string.Empty,
-                                            Grade = t.Grade
-                                                .Select(b => activeGrades[b])
-                                                .BuildCommaString(),
-                                            WorkFormat = t.WorkFormat
-                                                .Select(b => activeWorkFormat[b])
-                                                .BuildCommaString()
-                                        })
-                                        .ToList();
-
-                                    var vacancyText = BusExtensions.PrepareVacancyText(vacancyToText);
-                                    var aaa = _buttonProvider.Ffff();
-                                    await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
-                                        callbackQuery.Message.MessageId, vacancyText,
-                                        aaa);
-                                }
-                                else
-                                {
-                                    await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
-                                        callbackQuery.Message.MessageId, "Вакансий нет",
-                                        backMainMenuButton);
-                                }
-                            }
+                        if (vacancy.Count > 0)
+                        {
+                            var vacancyText = VacancyExtension.PrepareVacancyText(vacancy);
+                            var aaa = _buttonProvider.ButtonForSubscribe();
+                            await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                                callbackQuery.Message.MessageId, vacancyText,
+                                aaa);
+                            break;
                         }
                     }
-                    else
-                    {
-                        if (int.TryParse(splittedData[1], out var specId))
-                        {
-                            var sortedVacancy = allVacancies
-                                .Where(t => t.Speciality == specId && t.CareerPublication == 46)
-                                .ToList();
 
-                            if (cityFormat != null)
-                            {
-                                var cityDictionary = cityFormat
-                                    .Fields
-                                    .ToDictionary(t => t.Id, t => t.Name);
-
-                                if (sortedVacancy.Count > 0)
-                                {
-                                    var vacancyToText = sortedVacancy.Select(t => new VacancyDto
-                                        {
-                                            Id = t.Id,
-                                            Speciality =
-                                                t.Speciality.HasValue ? activeStream[t.Speciality.Value] : null,
-                                            SubSpeciality = t.SubSpeciality.HasValue
-                                                ? activeSpecialty[t.SubSpeciality.Value]
-                                                : null,
-                                            Position = t.Position ?? string.Empty,
-                                            Money = t.Money ?? string.Empty,
-                                            VacancyCity = t.VacancyCity
-                                                .Select(b => cityDictionary[b]).BuildCommaString(),
-                                            Grade = t.Grade.Select(b => activeGrades[b]).BuildCommaString(),
-                                            WorkFormat = t.WorkFormat.Select(b => activeWorkFormat[b])
-                                                .BuildCommaString()
-                                        })
-                                        .ToList();
-
-                                    var vacancyText = BusExtensions.PrepareVacancyText(vacancyToText);
-                                    var aaa = _buttonProvider.Ffff();
-                                    await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
-                                        callbackQuery.Message.MessageId, vacancyText,
-                                        aaa);
-                                }
-                                else
-                                {
-                                    await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
-                                        callbackQuery.Message.MessageId, "Вакансий нет",
-                                        backMainMenuButton);
-                                }
-                            }
-                        }
-                    }
+                    await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                        callbackQuery.Message.MessageId, "Вакансий нет",
+                        backMainMenuButton);
                 }
 
                 break;
             }
             case "subspecialty":
             {
+                var backMainMenuButton = _buttonProvider.GetBackMenuButton();
+                var user = _userContextProvider.GetCandidateContext(callbackQuery.User.Id);
+
+                if (int.TryParse(sp[1], out var specialtyId))
+                {
+                    var vacancyToText = await GetVacancyTextAsync(specialtyId, true);
+
+                    if (user != null)
+                    {
+                        user.Subspeciality = specialtyId;
+                    }
+
+                    if (vacancyToText.Count > 0)
+                    {
+                        var vacancyText = VacancyExtension.PrepareVacancyText(vacancyToText);
+                        var buttons = _buttonProvider.ButtonForSubscribe();
+                        await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                            callbackQuery.Message.MessageId, vacancyText,
+                            buttons);
+                        break;
+                    }
+                }
+
+                await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                    callbackQuery.Message.MessageId, "Вакансий нет",
+                    backMainMenuButton);
+
                 break;
             }
             default:
@@ -331,5 +212,129 @@ public class AnswerBotService
                 break;
             }
         }
+    }
+
+    private async Task<List<VacancyDto>> GetVacancyTextAsync(int specialityId, bool isSubSpecialty)
+    {
+        var cityFormat = await _huntflowService.GetCityResponseAsync();
+        var gradeResponse = await _huntflowService.GetGradeResponseAsync();
+        var workFormat = await _huntflowService.GetWorkFormatAsync();
+        var subSpecialtyResponse = await _huntflowService.GetDodoSubSpecialtyAsync();
+        var dodoStreams = await _huntflowService.GetDodoStreamAsync();
+
+        var pages = 1;
+        int totalPages = 0;
+        var notSortedVacancy = await _huntflowService.GetVacanciesAsync(pages);
+
+        var allVacancies = new List<Vacancy>();
+
+        if (notSortedVacancy != null)
+        {
+            allVacancies.AddRange(notSortedVacancy.Vacancies);
+            if (notSortedVacancy.TotalPages > pages)
+            {
+                do
+                {
+                    pages++;
+                    var addingVacancy = await _huntflowService.GetVacanciesAsync(pages);
+
+                    if (addingVacancy != null)
+                    {
+                        allVacancies.AddRange(addingVacancy.Vacancies);
+                        totalPages = addingVacancy.TotalPages;
+                    }
+                } while (totalPages > pages);
+            }
+        }
+
+        var activeSpecialty = new Dictionary<int, string>();
+        var activeStream = new Dictionary<int, string>();
+        var activeGrades = new Dictionary<int, string>();
+        var activeWorkFormat = new Dictionary<int, string>();
+        var cityDictionary = new Dictionary<int, string>();
+
+        if (subSpecialtyResponse != null)
+        {
+            activeSpecialty = subSpecialtyResponse
+                .Fields
+                .Where(t => t.Active)
+                .ToDictionary(t => t.Id, t => t.Name);
+        }
+
+        if (dodoStreams != null)
+        {
+            activeStream = dodoStreams
+                .Fields
+                .Where(t => t.Active)
+                .ToDictionary(t => t.Id, t => t.Name);
+        }
+
+        if (gradeResponse != null)
+        {
+            activeGrades = gradeResponse
+                .Fields
+                .Where(t => t.Active)
+                .ToDictionary(t => t.Id, t => t.Name);
+        }
+
+        if (workFormat != null)
+        {
+            activeWorkFormat = workFormat
+                .Fields
+                .Where(t => t.Active)
+                .ToDictionary(t => t.Id, t => t.Name);
+        }
+
+        var sortedVacancies = new List<Vacancy>();
+
+        if (isSubSpecialty)
+        {
+            sortedVacancies = allVacancies
+                .Where(t => t.Speciality == 55 && t.SubSpeciality == specialityId
+                                               && t.CareerPublication == 46)
+                .ToList();
+        }
+        else
+        {
+            sortedVacancies = allVacancies
+                .Where(t => t.Speciality == specialityId
+                            && t.CareerPublication == 46)
+                .ToList();
+        }
+
+        if (cityFormat != null)
+        {
+            cityDictionary = cityFormat.Fields.ToDictionary(t => t.Id, t => t.Name);
+        }
+
+        if (sortedVacancies.Count > 0)
+        {
+            var vacancyToText = sortedVacancies.Select(t => new VacancyDto
+                {
+                    Id = t.Id,
+                    Speciality = t.Speciality.HasValue
+                        ? activeStream[t.Speciality.Value]
+                        : null,
+                    SubSpeciality = t.SubSpeciality.HasValue
+                        ? activeSpecialty[t.SubSpeciality.Value]
+                        : null,
+                    VacancyCity = t.VacancyCity
+                        .Select(b => cityDictionary[b])
+                        .BuildCommaString(),
+                    Position = t.Position ?? string.Empty,
+                    Money = t.Money ?? string.Empty,
+                    Grade = t.Grade
+                        .Select(b => activeGrades[b])
+                        .BuildCommaString(),
+                    WorkFormat = t.WorkFormat
+                        .Select(b => activeWorkFormat[b])
+                        .BuildCommaString()
+                })
+                .ToList();
+
+            return vacancyToText;
+        }
+
+        return [];
     }
 }

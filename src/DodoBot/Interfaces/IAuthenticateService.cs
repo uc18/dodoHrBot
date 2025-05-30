@@ -4,5 +4,5 @@ namespace DodoBot.Interfaces;
 
 public interface IAuthenticateService
 {
-    Task<string> GetRefreshToken();
+    Task<string> GetRefreshToken(bool isTokenExpired = false);
 }

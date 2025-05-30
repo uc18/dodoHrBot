@@ -4,7 +4,7 @@ using DodoBot.Models;
 
 namespace DodoBot.Extensions;
 
-public static class BusExtensions
+public static class VacancyExtension
 {
     public static string PrepareVacancyText(IEnumerable<VacancyDto> dodoVacancies)
     {

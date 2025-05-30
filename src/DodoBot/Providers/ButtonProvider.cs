@@ -26,7 +26,7 @@ public class ButtonProvider
                     new InlineKeyboardButton
                     {
                         Text = "Частота рассылок",
-                        CallbackData = "timing-notify"
+                        CallbackData = "timingNotify"
                     }
                 }
             }
@@ -44,6 +44,18 @@ public class ButtonProvider
                     CallbackData = $"{typeOfStream}-{stream.Id}"
                 }
             }).ToList();
+
+        if (typeOfStream.ToLower().Equals("subspecialty"))
+        {
+            buttons.Add(new List<InlineKeyboardButton>
+            {
+                new InlineKeyboardButton
+                {
+                    Text = "Подписаться на обновления",
+                    CallbackData = "subscribe"
+                }
+            });
+        }
 
         buttons.Add(new List<InlineKeyboardButton>
         {
@@ -80,7 +92,7 @@ public class ButtonProvider
         };
     }
 
-    public InlineKeyboardMarkup Ffff()
+    public InlineKeyboardMarkup ButtonForSubscribe()
     {
         return new InlineKeyboardMarkup
         {
@@ -106,7 +118,7 @@ public class ButtonProvider
         };
     }
 
-    public InlineKeyboardMarkup Ffff2()
+    public InlineKeyboardMarkup ButtonForSetTiming()
     {
         return new InlineKeyboardMarkup
         {
@@ -132,7 +144,7 @@ public class ButtonProvider
         };
     }
 
-    public InlineKeyboardMarkup Ffff34()
+    public InlineKeyboardMarkup ButtonTimingView()
     {
         return new InlineKeyboardMarkup
         {
@@ -158,34 +170,8 @@ public class ButtonProvider
                 {
                     new InlineKeyboardButton
                     {
-                        Text = "Раз в полгода",
+                        Text = "Раз в три месяца",
                         CallbackData = "3"
-                    }
-                },
-                new List<InlineKeyboardButton>
-                {
-                    new InlineKeyboardButton
-                    {
-                        Text = "В главное меню",
-                        CallbackData = "start"
-                    }
-                }
-            }
-        };
-    }
-
-    public InlineKeyboardMarkup Ffff3()
-    {
-        return new InlineKeyboardMarkup
-        {
-            Keyboard = new List<List<InlineKeyboardButton>>
-            {
-                new List<InlineKeyboardButton>
-                {
-                    new InlineKeyboardButton
-                    {
-                        Text = "Подписаться на обновления",
-                        CallbackData = "something"
                     }
                 },
                 new List<InlineKeyboardButton>
