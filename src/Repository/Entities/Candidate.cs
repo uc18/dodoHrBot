@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Repository.Entities;
@@ -17,6 +18,7 @@ public class Candidate
     [Column("Last_name")]
     public string LastName { get; set; }
 
-    [Column("Speciality_name")]
-    public string SpecialityName { get; set; }
+    public Periodicity Periodicity { get; set; }
+
+    public ICollection<SubscribedVacancy> SubscribedVacancies { get; set; }
 }

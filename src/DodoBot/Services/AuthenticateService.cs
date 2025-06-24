@@ -27,7 +27,7 @@ public class AuthenticateService : IAuthenticateService
     public AuthenticateService(HttpClient httpClient, IOptions<ApplicationOptions> options)
     {
         _httpClient = httpClient;
-        _expirationDate = DateTime.UtcNow.AddMinutes(2);
+        _expirationDate = DateTime.UtcNow.AddMinutes(15);
         AccessToken = options.Value.HuntflowTokens.HuntflowAccessTokenApi;
         RefreshToken = options.Value.HuntflowTokens.HuntflowRefreshTokenApi;
         HuntflowDodoBrandsApiUrl = options.Value.HuntflowApiUrl;

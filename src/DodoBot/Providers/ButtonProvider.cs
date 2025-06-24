@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using DodoBot.Models;
 using DodoBot.Models.Huntflow;
+using Repository.Entities;
 using TelegramLibrary.Models.Keyboard;
 
 namespace DodoBot.Providers;
@@ -17,7 +19,7 @@ public class ButtonProvider
                 {
                     new InlineKeyboardButton
                     {
-                        Text = "Просмотреть вакансии",
+                        Text = "Хочу получать вакансии",
                         CallbackData = "viewVacancy"
                     }
                 },
@@ -25,39 +27,94 @@ public class ButtonProvider
                 {
                     new InlineKeyboardButton
                     {
-                        Text = "Частота рассылок",
-                        CallbackData = "timingNotify"
+                        Text = "Узнать больше о компании",
+                        CallbackData = "viewCompany"
                     }
                 }
             }
         };
     }
 
-    public InlineKeyboardMarkup GetDodoStreamButtons(IEnumerable<HuntflowDictionary> dodoStreams, string typeOfStream)
+    public InlineKeyboardMarkup MainMenuButtons(int countedSubscription)
     {
-        var buttons = dodoStreams.Select(stream =>
-            new List<InlineKeyboardButton>
-            {
-                new InlineKeyboardButton
-                {
-                    Text = stream.Name,
-                    CallbackData = $"{typeOfStream}-{stream.Id}"
-                }
-            }).ToList();
-
-        if (typeOfStream.ToLower().Equals("subspecialty"))
+        return new InlineKeyboardMarkup
         {
-            buttons.Add(new List<InlineKeyboardButton>
+            Keyboard = new List<List<InlineKeyboardButton>>
             {
-                new InlineKeyboardButton
+                new List<InlineKeyboardButton>
                 {
-                    Text = "Подписаться на обновления",
-                    CallbackData = "subscribe"
+                    new InlineKeyboardButton
+                    {
+                        Text = $"Мои подписки [{countedSubscription}]",
+                        CallbackData = "mySubscription"
+                    }
+                },
+                new List<InlineKeyboardButton>
+                {
+                    new InlineKeyboardButton
+                    {
+                        Text = "Узнать больше о компании",
+                        CallbackData = "viewCompany"
+                    }
+                },
+                new List<InlineKeyboardButton>
+                {
+                    new InlineKeyboardButton
+                    {
+                        Text = "Пользовательское соглашение",
+                        CallbackData = "legal"
+                    }
                 }
-            });
-        }
+            }
+        };
+    }
 
-        buttons.Add(new List<InlineKeyboardButton>
+    public InlineKeyboardMarkup EngineeringOrBusiness(int itSubscription, int businessSubscription)
+    {
+        return new InlineKeyboardMarkup
+        {
+            Keyboard = new List<List<InlineKeyboardButton>>
+            {
+                new List<InlineKeyboardButton>
+                {
+                    new InlineKeyboardButton
+                    {
+                        Text = itSubscription > 0 ? $"IT [{itSubscription}]" : "IT",
+                        CallbackData = "it"
+                    }
+                },
+                new List<InlineKeyboardButton>
+                {
+                    new InlineKeyboardButton
+                    {
+                        Text = businessSubscription > 0 ? $"Бизнес [{businessSubscription}]" : "Бизнес",
+                        CallbackData = "business"
+                    }
+                },
+                new List<InlineKeyboardButton>
+                {
+                    new InlineKeyboardButton
+                    {
+                        Text = "Назад",
+                        CallbackData = "start"
+                    }
+                }
+            }
+        };
+    }
+
+    public InlineKeyboardMarkup DodoResourcesButton(List<ResourceDto> resources)
+    {
+        var resourceButtons = resources.Select(resource => new List<InlineKeyboardButton>
+        {
+            new InlineKeyboardButton
+            {
+                Text = $"{resource.Name}",
+                Url = resource.Url
+            }
+        }).ToList();
+
+        resourceButtons.Add(new List<InlineKeyboardButton>
         {
             new InlineKeyboardButton
             {
@@ -66,13 +123,48 @@ public class ButtonProvider
             }
         });
 
+        return new InlineKeyboardMarkup
+        {
+            Keyboard = resourceButtons
+        };
+    }
+
+    public InlineKeyboardMarkup GetDodoStreamButtons(IEnumerable<HuntflowDictionary> dodoStreams, string typeOfStream,
+        HashSet<int> existSpecialty)
+    {
+        var buttons = dodoStreams.Select(stream =>
+            new List<InlineKeyboardButton>
+            {
+                new InlineKeyboardButton
+                {
+                    Text = existSpecialty.Contains(stream.Id) ? "◾️" + stream.Name : "▫️" + stream.Name,
+                    CallbackData = $"{typeOfStream}-{stream.Id}"
+                }
+            }).ToList();
+
+        buttons.Add(new List<InlineKeyboardButton>
+        {
+            new InlineKeyboardButton
+            {
+                Text = "Готово",
+                CallbackData = "set"
+            }
+        });
+
+        buttons.Add(new List<InlineKeyboardButton>
+        {
+            new InlineKeyboardButton
+            {
+                Text = "Назад",
+                CallbackData = "viewvacancy"
+            }
+        });
 
         return new InlineKeyboardMarkup
         {
             Keyboard = buttons
         };
     }
-
 
     public InlineKeyboardMarkup GetBackMenuButton()
     {
@@ -102,14 +194,6 @@ public class ButtonProvider
                 {
                     new InlineKeyboardButton
                     {
-                        Text = "Подписаться на обновления",
-                        CallbackData = "subscribe"
-                    }
-                },
-                new List<InlineKeyboardButton>
-                {
-                    new InlineKeyboardButton
-                    {
                         Text = "В главное меню",
                         CallbackData = "start"
                     }
@@ -118,33 +202,7 @@ public class ButtonProvider
         };
     }
 
-    public InlineKeyboardMarkup ButtonForSetTiming()
-    {
-        return new InlineKeyboardMarkup
-        {
-            Keyboard = new List<List<InlineKeyboardButton>>
-            {
-                new List<InlineKeyboardButton>
-                {
-                    new InlineKeyboardButton
-                    {
-                        Text = "Выбрать частоту рассылки",
-                        CallbackData = "timingNotify"
-                    }
-                },
-                new List<InlineKeyboardButton>
-                {
-                    new InlineKeyboardButton
-                    {
-                        Text = "В главное меню",
-                        CallbackData = "start"
-                    }
-                }
-            }
-        };
-    }
-
-    public InlineKeyboardMarkup ButtonTimingView()
+    public InlineKeyboardMarkup ButtonTimingView(List<PeriodicitySettings> settings)
     {
         return new InlineKeyboardMarkup
         {
@@ -155,7 +213,7 @@ public class ButtonProvider
                     new InlineKeyboardButton
                     {
                         Text = "Раз в неделю",
-                        CallbackData = "1"
+                        CallbackData = "frequency-1"
                     }
                 },
                 new List<InlineKeyboardButton>
@@ -163,7 +221,7 @@ public class ButtonProvider
                     new InlineKeyboardButton
                     {
                         Text = "Раз в месяц",
-                        CallbackData = "2"
+                        CallbackData = "frequency-2"
                     }
                 },
                 new List<InlineKeyboardButton>
@@ -171,7 +229,15 @@ public class ButtonProvider
                     new InlineKeyboardButton
                     {
                         Text = "Раз в три месяца",
-                        CallbackData = "3"
+                        CallbackData = "frequency-3"
+                    }
+                },
+                new List<InlineKeyboardButton>
+                {
+                    new InlineKeyboardButton
+                    {
+                        Text = "Отписаться",
+                        CallbackData = "frequency-4"
                     }
                 },
                 new List<InlineKeyboardButton>

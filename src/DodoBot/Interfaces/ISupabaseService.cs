@@ -1,11 +1,103 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using DodoBot.Models;
+using Repository.Entities;
 
 namespace DodoBot.Interfaces;
 
 public interface ISupabaseService
 {
-    Task<bool> SetNewSomething(string streamName);
+    /// <summary>
+    /// Добавить нового пользователя
+    /// </summary>
+    /// <param name="candidate"></param>
+    /// <returns></returns>
+    Task<string> AddNewUser(СandidateInfo candidate);
 
-    Task<bool> CreateNewUser();
-    Task<bool> FindUser();
+    /// <summary>
+    /// Записать периодичность отправки уведомлений
+    /// </summary>
+    /// <param name="candidate"></param>
+    /// <returns></returns>
+    Task<bool> WritePeriodicitySettings(Candidate candidate);
+
+    /// <summary>
+    /// Вернуть количество пользовательских подписок
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<int> UserVacancySubscribe(string userId);
+
+    /// <summary>
+    /// Вернуть ресурсы Додо
+    /// </summary>
+    /// <returns></returns>
+    Task<List<ResourceDto>> GetResourcesDodo();
+
+    /// <summary>
+    /// Получить пользовательский идентификатор
+    /// </summary>
+    /// <param name="telegramId"></param>
+    /// <returns></returns>
+    Task<string> GetUserId(long telegramId);
+
+    /// <summary>
+    /// Получить коллекцию пользовательских подписок в бизнесе
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<HashSet<int>> GetUserSpecialty(string userId);
+
+    /// <summary>
+    /// Получить коллекцию пользовательских подписок в it
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<HashSet<int>> GetUserSubSpecialty(string userId);
+
+    /// <summary>
+    /// Записать подписку в бизнесе
+    /// </summary>
+    /// <param name="specialtyId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<bool> WriteSpecialty(int specialtyId, string userId);
+
+    /// <summary>
+    /// Отписаться от подписки на бизнес
+    /// </summary>
+    /// <param name="specialtyId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<bool> RemoveSpecialty(int specialtyId, string userId);
+
+    /// <summary>
+    /// Подписаться на вакансии в it
+    /// </summary>
+    /// <param name="specialtyId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<bool> WriteSubSpecialty(int specialtyId, string userId);
+
+    /// <summary>
+    /// Отписаться от вакансий в it
+    /// </summary>
+    /// <param name="specialtyId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<bool> RemoveSubSpecialty(int specialtyId, string userId);
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<int> ReadUserSubscribeOptions(string userId);
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<bool> UpdateExistUser(string userId);
 }

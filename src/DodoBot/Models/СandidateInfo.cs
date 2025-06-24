@@ -2,7 +2,9 @@ namespace DodoBot.Models;
 
 public class СandidateInfo
 {
-    public int Speciality { get; set; }
+    public long TelegramId { get; set; }
 
-    public int Subspeciality { get; set; }
+    public string FirstName { get; set; }
+
+    public string LastName { get; set; }
 }

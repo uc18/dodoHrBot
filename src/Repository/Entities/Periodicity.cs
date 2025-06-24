@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Repository.Entities;
@@ -13,4 +14,9 @@ public class Periodicity
 
     [Column("Periodicity_Id")]
     public PeriodicitySettings Settings { get; set; }
+
+    [Column("StartNotify")]
+    public DateTime StartNotify { get; set; }
+
+    public Candidate Candidate { get; set; }
 }
