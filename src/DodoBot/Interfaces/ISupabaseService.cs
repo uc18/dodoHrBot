@@ -92,7 +92,15 @@ public interface ISupabaseService
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<int> ReadUserSubscribeOptions(string userId);
+    Task<PeriodicitySettings?> ReadUserSubscribeOptions(string userId);
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="setting"></param>
+    /// <returns></returns>
+    Task<PeriodicitySettings?> WriteReadUserSubscribe(string userId, PeriodicitySettings setting);
 
     /// <summary>
     ///

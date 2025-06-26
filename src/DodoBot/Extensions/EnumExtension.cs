@@ -15,4 +15,16 @@ public static class EnumExtension
             _ => "Не определено"
         };
     }
+
+    public static PeriodicitySettings? ConvertIntoEnum(this int setting)
+    {
+        return setting switch
+        {
+            1 => PeriodicitySettings.EveryWeek,
+            2 => PeriodicitySettings.EveryMonth,
+            3 => PeriodicitySettings.EveryThreeMonth,
+            4 => PeriodicitySettings.Disable,
+            _ => null
+        };
+    }
 }

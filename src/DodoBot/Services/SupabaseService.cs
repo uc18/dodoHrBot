@@ -219,7 +219,18 @@ public class SupabaseService : ISupabaseService
         }).ToList();
     }
 
-    public async Task<int> ReadUserSubscribeOptions(string userId)
+    public async Task<PeriodicitySettings?> ReadUserSubscribeOptions(string userId)
+    {
+        var candidate = await _context
+            .Candidates
+            .AsNoTracking()
+            .Include(t => t.Periodicity)
+            .FirstOrDefaultAsync(t => t.Id == userId);
+
+        return candidate != null ? candidate.Periodicity.Settings : null;
+    }
+
+    public async Task<PeriodicitySettings?> WriteReadUserSubscribe(string userId, PeriodicitySettings setting)
     {
         var candidate = await _context
             .Candidates
@@ -228,10 +239,14 @@ public class SupabaseService : ISupabaseService
 
         if (candidate != null)
         {
-            return (int)candidate.Periodicity.Settings;
+            candidate.Periodicity.Settings = setting;
+
+            await _context.SaveChangesAsync();
+
+            return setting;
         }
 
-        return 0;
+        return null;
     }
 
     public async Task<bool> UpdateExistUser(string userId)

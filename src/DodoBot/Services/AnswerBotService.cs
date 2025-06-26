@@ -22,16 +22,13 @@ public class AnswerBotService
 
     private readonly ISupabaseService _supabaseService;
 
-    private readonly UserContextProvider _userContextProvider;
-
     public AnswerBotService(DodoBotMessageService messageService, ButtonProvider buttonProvider,
-        IHuntflowService huntflowService, ISupabaseService supabaseService, UserContextProvider user)
+        IHuntflowService huntflowService, ISupabaseService supabaseService)
     {
         _messageService = messageService;
         _buttonProvider = buttonProvider;
         _huntflowService = huntflowService;
         _supabaseService = supabaseService;
-        _userContextProvider = user;
     }
 
     public async Task ProcessTextMessage(Message update)
@@ -72,31 +69,28 @@ public class AnswerBotService
                 }
                 case "setting":
                 {
-                    if (false)
+                    var userId = await _supabaseService.GetUserId(update.Chat.Id);
+                    if (userId.Length > 0)
                     {
-                        var userId = await _supabaseService.GetUserId(update.Chat.Id);
+                        var countedSubscribe = await _supabaseService.UserVacancySubscribe(userId);
 
-                        if (userId.Length > 0)
+                        if (countedSubscribe > 0)
                         {
-                            var countedSubscribe = await _supabaseService.UserVacancySubscribe(userId);
+                            var setting = await _supabaseService.ReadUserSubscribeOptions(userId);
 
-                            if (countedSubscribe > 0)
+                            var periodicitySetting = new List<PeriodicitySettings>
                             {
-                                var t = await _supabaseService.ReadUserSubscribeOptions(userId);
-                                var aa = new List<PeriodicitySettings>
-                                {
-                                    PeriodicitySettings.EveryWeek,
-                                    PeriodicitySettings.EveryMonth,
-                                    PeriodicitySettings.EveryThreeMonth,
-                                    PeriodicitySettings.Disable
-                                };
-                                var y = _buttonProvider.ButtonTimingView(aa);
-                                //await _messageService.SendMessageToUser(update.Chat.Id, t);
-                            }
+                                PeriodicitySettings.EveryWeek,
+                                PeriodicitySettings.EveryMonth,
+                                PeriodicitySettings.EveryThreeMonth,
+                                PeriodicitySettings.Disable
+                            };
+
+                            var frequencyButton =
+                                _buttonProvider.ButtonsFrequencySetting(periodicitySetting, setting);
+                            await _messageService.SendInlineMessage(update.Chat.Id, "ttt", frequencyButton);
                         }
                     }
-
-                    await _messageService.SendMessageToUser(update.Chat.Id, StaffConstants.ButtonDoesntWork);
                     break;
                 }
                 case "legal":
@@ -312,6 +306,33 @@ public class AnswerBotService
             }
             case "frequency":
             {
+                var userId = await _supabaseService.GetUserId(callbackQuery.User.Id);
+
+                if (userId.Length > 0)
+                {
+                    if (int.TryParse(sp[1], out var setting))
+                    {
+                        var newSettings = setting.ConvertIntoEnum();
+
+                        if (newSettings.HasValue)
+                        {
+                            var result = await _supabaseService.WriteReadUserSubscribe(userId, newSettings.Value);
+
+                            var periodicitySetting = new List<PeriodicitySettings>
+                            {
+                                PeriodicitySettings.EveryWeek,
+                                PeriodicitySettings.EveryMonth,
+                                PeriodicitySettings.EveryThreeMonth,
+                                PeriodicitySettings.Disable
+                            };
+
+                            var timingButton = _buttonProvider.ButtonsFrequencySetting(periodicitySetting, result);
+                            await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                                callbackQuery.Message.MessageId, "ttt", timingButton);
+                        }
+                    }
+                }
+
                 break;
             }
             default:

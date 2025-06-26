@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using DodoBot.Extensions;
 using DodoBot.Models;
 using DodoBot.Models.Huntflow;
 using Repository.Entities;
@@ -202,53 +203,30 @@ public class ButtonProvider
         };
     }
 
-    public InlineKeyboardMarkup ButtonTimingView(List<PeriodicitySettings> settings)
+    public InlineKeyboardMarkup ButtonsFrequencySetting(List<PeriodicitySettings> settings,
+        PeriodicitySettings? currentPeriodicity)
     {
+        var but = settings.Select(t => new List<InlineKeyboardButton>
+        {
+            new InlineKeyboardButton
+            {
+                Text = currentPeriodicity == t ? $"{t.GetDescription()} ☑️" : t.GetDescription(),
+                CallbackData = $"frequency-{(int)t}"
+            }
+        }).ToList();
+
+        but.Add(new List<InlineKeyboardButton>
+        {
+            new InlineKeyboardButton
+            {
+                Text = "В главное меню",
+                CallbackData = "start"
+            }
+        });
+
         return new InlineKeyboardMarkup
         {
-            Keyboard = new List<List<InlineKeyboardButton>>
-            {
-                new List<InlineKeyboardButton>
-                {
-                    new InlineKeyboardButton
-                    {
-                        Text = "Раз в неделю",
-                        CallbackData = "frequency-1"
-                    }
-                },
-                new List<InlineKeyboardButton>
-                {
-                    new InlineKeyboardButton
-                    {
-                        Text = "Раз в месяц",
-                        CallbackData = "frequency-2"
-                    }
-                },
-                new List<InlineKeyboardButton>
-                {
-                    new InlineKeyboardButton
-                    {
-                        Text = "Раз в три месяца",
-                        CallbackData = "frequency-3"
-                    }
-                },
-                new List<InlineKeyboardButton>
-                {
-                    new InlineKeyboardButton
-                    {
-                        Text = "Отписаться",
-                        CallbackData = "frequency-4"
-                    }
-                },
-                new List<InlineKeyboardButton>
-                {
-                    new InlineKeyboardButton
-                    {
-                        Text = "В главное меню",
-                        CallbackData = "start"
-                    }
-                }
-            }
+            Keyboard = but
         };
     }
 }
