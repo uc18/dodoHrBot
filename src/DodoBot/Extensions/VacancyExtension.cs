@@ -12,38 +12,13 @@ public static class VacancyExtension
         foreach (var vacancy in dodoVacancies)
         {
             sbVacancy.AppendLine();
-            sbVacancy.AppendLine($"Стрим: {vacancy.Speciality}");
 
             if (vacancy.Position.Length > 0)
             {
                 sbVacancy.AppendLine($"Позиция: {vacancy.Position}");
             }
 
-            if (vacancy.Money.Length > 0)
-            {
-                sbVacancy.AppendLine($"Оклад: {vacancy.Money}");
-            }
-
-            if (vacancy.VacancyCity.Length == 0)
-            {
-                sbVacancy.AppendLine("Город: удаленка");
-            }
-            else
-            {
-                sbVacancy.AppendLine($"Город: {vacancy.VacancyCity}");
-            }
-
-            if (vacancy.WorkFormat.Length > 0)
-            {
-                sbVacancy.AppendLine($"Режим работы: {vacancy.WorkFormat}");
-            }
-
-            if (vacancy.Grade.Length > 0)
-            {
-                sbVacancy.AppendLine($"Уровень: {vacancy.Grade}");
-            }
-
-            sbVacancy.AppendLine($"Подробнее: https://dodoteam.ru/vacancy/?vacancyId={vacancy.Id}");
+            sbVacancy.AppendLine($"Подробнее: https://dodoteam.ru/vacancy?vacancyId={vacancy.Id}");
         }
 
         return sbVacancy.ToString();
@@ -53,11 +28,20 @@ public static class VacancyExtension
     {
         var sb = new StringBuilder();
 
+        sb.AppendLine("Готово! Теперь ты будешь в курсе новых вакансий по направлениям: ");
         foreach (var value in values)
         {
-            sb.AppendJoin(",", value);
+            if (value.Contains("&"))
+            {
+                sb.AppendLine($"- {value.Replace("&", "%26")}");
+            }
+            else
+            {
+                sb.AppendLine($"- {value}");
+            }
         }
 
+        sb.AppendLine("Никакого спама, только лучшие предложения!");
         return sb.ToString();
     }
 }

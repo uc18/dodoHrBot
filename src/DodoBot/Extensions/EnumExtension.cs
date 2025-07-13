@@ -8,9 +8,7 @@ public static class EnumExtension
     {
         return value switch
         {
-            PeriodicitySettings.EveryWeek => "Каждую неделю",
-            PeriodicitySettings.EveryMonth => "Каждый месяц",
-            PeriodicitySettings.EveryThreeMonth => "Каждые три месяца",
+            PeriodicitySettings.Enable => "Включено",
             PeriodicitySettings.Disable => "Отписаться",
             _ => "Не определено"
         };
@@ -20,10 +18,8 @@ public static class EnumExtension
     {
         return setting switch
         {
-            1 => PeriodicitySettings.EveryWeek,
-            2 => PeriodicitySettings.EveryMonth,
-            3 => PeriodicitySettings.EveryThreeMonth,
-            4 => PeriodicitySettings.Disable,
+            1 => PeriodicitySettings.Enable,
+            2 => PeriodicitySettings.Disable,
             _ => null
         };
     }

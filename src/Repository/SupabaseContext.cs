@@ -18,6 +18,8 @@ public class SupabaseContext : DbContext
 
     public DbSet<SubscribedVacancy> SubscribedVacancies { get; set; }
 
+    public DbSet<Vacancy> Vacancies { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Candidate>()

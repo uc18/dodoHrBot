@@ -8,6 +8,6 @@ public static class ServicesExtension
     public static void AddBackgroundsService(this IServiceCollection services)
     {
         services.AddHostedService<BackgroundTelegramMessageProcessor>();
-        // services.AddHostedService<HrPlatformSyncService>();
+        services.AddHostedService<BackgroundNotifyVacancyProcessor>();
     }
 }

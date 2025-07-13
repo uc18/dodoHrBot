@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace DodoBot.Models.Huntflow;
 
-public class Vacancy
+public class HuntflowVacancy
 {
     [JsonPropertyName("id")]
     public int Id { get; set; }

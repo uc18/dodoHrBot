@@ -3,7 +3,7 @@ using DodoBot.Models.Huntflow.Response;
 
 namespace DodoBot.Interfaces;
 
-public interface IHuntflowService
+public interface IHuntflowApi
 {
     /// <summary>
     ///
@@ -22,22 +22,4 @@ public interface IHuntflowService
     /// </summary>
     /// <returns></returns>
     Task<VacancyResponse?> GetVacanciesAsync(int page);
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <returns></returns>
-    Task<DictionaryResponse?> GetWorkFormatAsync();
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <returns></returns>
-    Task<DictionaryResponse?> GetCityResponseAsync();
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <returns></returns>
-    Task<DictionaryResponse?> GetGradeResponseAsync();
 }

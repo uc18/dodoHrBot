@@ -17,5 +17,5 @@ public class VacancyResponse
     public int TotalPages { get; set; }
 
     [JsonPropertyName("items")]
-    public Vacancy[] Vacancies { get; set; }
+    public HuntflowVacancy[] Vacancies { get; set; }
 }

@@ -18,7 +18,7 @@ public class Candidate
     [Column("Last_name")]
     public string LastName { get; set; }
 
-    public Periodicity Periodicity { get; set; }
+    public Periodicity? Periodicity { get; set; }
 
     public ICollection<SubscribedVacancy> SubscribedVacancies { get; set; }
 }

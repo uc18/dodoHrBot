@@ -10,7 +10,7 @@ namespace DodoBot.Providers;
 
 public class ButtonProvider
 {
-    public InlineKeyboardMarkup MainMenuButtons()
+    public InlineKeyboardMarkup MainMenuButtons(string legalUrl)
     {
         return new InlineKeyboardMarkup
         {
@@ -28,6 +28,15 @@ public class ButtonProvider
                 {
                     new InlineKeyboardButton
                     {
+                        Text = "Пользовательское соглашение",
+                        CallbackData = "legal",
+                        Url = legalUrl
+                    }
+                },
+                new List<InlineKeyboardButton>
+                {
+                    new InlineKeyboardButton
+                    {
                         Text = "Узнать больше о компании",
                         CallbackData = "viewCompany"
                     }
@@ -36,7 +45,7 @@ public class ButtonProvider
         };
     }
 
-    public InlineKeyboardMarkup MainMenuButtons(int countedSubscription)
+    public InlineKeyboardMarkup MainMenuButtons(int countedSubscription, string legalUrl)
     {
         return new InlineKeyboardMarkup
         {
@@ -63,14 +72,23 @@ public class ButtonProvider
                     new InlineKeyboardButton
                     {
                         Text = "Пользовательское соглашение",
-                        CallbackData = "legal"
+                        CallbackData = "legal",
+                        Url = legalUrl
+                    }
+                },
+                new List<InlineKeyboardButton>
+                {
+                    new InlineKeyboardButton
+                    {
+                        Text = "Получить открытые вакансии",
+                        CallbackData = "sendvacancies"
                     }
                 }
             }
         };
     }
 
-    public InlineKeyboardMarkup EngineeringOrBusiness(int itSubscription, int businessSubscription)
+    public InlineKeyboardMarkup EngineeringAndBusiness(int itSubscription, int businessSubscription)
     {
         return new InlineKeyboardMarkup
         {
@@ -177,45 +195,33 @@ public class ButtonProvider
                 {
                     new InlineKeyboardButton
                     {
-                        Text = "В главное меню",
-                        CallbackData = "start"
+                        Text = "Выбери частоту рассылки",
+                        CallbackData = "frequency"
                     }
                 }
             }
         };
     }
 
-    public InlineKeyboardMarkup ButtonForSubscribe()
+    public InlineKeyboardMarkup ButtonsFrequencySetting(PeriodicitySettings? currentPeriodicity)
     {
-        return new InlineKeyboardMarkup
+        var settings = new List<PeriodicitySettings>
         {
-            Keyboard = new List<List<InlineKeyboardButton>>
-            {
-                new List<InlineKeyboardButton>
-                {
-                    new InlineKeyboardButton
-                    {
-                        Text = "В главное меню",
-                        CallbackData = "start"
-                    }
-                }
-            }
+            PeriodicitySettings.Enable,
+            PeriodicitySettings.Disable
         };
-    }
 
-    public InlineKeyboardMarkup ButtonsFrequencySetting(List<PeriodicitySettings> settings,
-        PeriodicitySettings? currentPeriodicity)
-    {
-        var but = settings.Select(t => new List<InlineKeyboardButton>
+
+        var buttons = settings.Select(t => new List<InlineKeyboardButton>
         {
             new InlineKeyboardButton
             {
-                Text = currentPeriodicity == t ? $"{t.GetDescription()} ☑️" : t.GetDescription(),
-                CallbackData = $"frequency-{(int)t}"
+                Text = currentPeriodicity == t ? $"{t.GetDescription()} ✅️" : t.GetDescription(),
+                CallbackData = $"changefrequency-{(int)t}"
             }
         }).ToList();
 
-        but.Add(new List<InlineKeyboardButton>
+        buttons.Add(new List<InlineKeyboardButton>
         {
             new InlineKeyboardButton
             {
@@ -226,7 +232,7 @@ public class ButtonProvider
 
         return new InlineKeyboardMarkup
         {
-            Keyboard = but
+            Keyboard = buttons
         };
     }
 }

@@ -27,15 +27,15 @@ public class AuthenticateService : IAuthenticateService
     public AuthenticateService(HttpClient httpClient, IOptions<ApplicationOptions> options)
     {
         _httpClient = httpClient;
-        _expirationDate = DateTime.UtcNow.AddMinutes(15);
+        _expirationDate = DateTime.UtcNow.AddSeconds(options.Value.HuntflowTokens.HuntflowTokenLifeTime);
         AccessToken = options.Value.HuntflowTokens.HuntflowAccessTokenApi;
         RefreshToken = options.Value.HuntflowTokens.HuntflowRefreshTokenApi;
         HuntflowDodoBrandsApiUrl = options.Value.HuntflowApiUrl;
     }
 
-    public async Task<string> GetRefreshToken(bool isTokenExpired = false)
+    public async Task<string> GetRefreshToken()
     {
-        if (_expirationDate < DateTime.UtcNow || false)
+        if (_expirationDate < DateTime.UtcNow)
         {
             var content = JsonContent.Create(new TokenRequest
             {

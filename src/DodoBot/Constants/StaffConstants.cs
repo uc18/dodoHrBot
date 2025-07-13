@@ -5,7 +5,7 @@ public static class StaffConstants
     public static readonly string BotAnswer =
         "Привет! 👋 Я — карьерный бот Dodo Brands. Помогу найти классные вакансии. Давай начнем!";
 
-    public static readonly string DontUnderstandYouUseButton = "Используй кнопки";
+    public static readonly string DontUnderstandYouUseButton = "Я понимаю только команды из меню. Попробуй снова!";
 
     public static readonly string DontWork = "Бот временно не работает";
 
@@ -13,5 +13,9 @@ public static class StaffConstants
 
     public static readonly string OneOrMore = "Выбери одну или несколько категорий: ";
 
-    public static readonly string ButtonDoesntWork = "Данное меню находится в разработке";
+    public static readonly string LegalAnswer = "Здесь ты можешь ознакомиться с политикой конфидициальности";
+
+    public static readonly string VacanciesNotFound = "Вакансий под твои запросы нет";
+
+    public static readonly string DodoUrl = "https://dodoteam.ru/vacancy/?vacancyId=";
 }

@@ -5,7 +5,7 @@ using Repository.Entities;
 
 namespace DodoBot.Interfaces;
 
-public interface ISupabaseService
+public interface ISupabaseRepository
 {
     /// <summary>
     /// Добавить нового пользователя
@@ -15,18 +15,11 @@ public interface ISupabaseService
     Task<string> AddNewUser(СandidateInfo candidate);
 
     /// <summary>
-    /// Записать периодичность отправки уведомлений
-    /// </summary>
-    /// <param name="candidate"></param>
-    /// <returns></returns>
-    Task<bool> WritePeriodicitySettings(Candidate candidate);
-
-    /// <summary>
     /// Вернуть количество пользовательских подписок
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<int> UserVacancySubscribe(string userId);
+    Task<int> CountUserVacancySubscribe(string userId);
 
     /// <summary>
     /// Вернуть ресурсы Додо
@@ -39,7 +32,7 @@ public interface ISupabaseService
     /// </summary>
     /// <param name="telegramId"></param>
     /// <returns></returns>
-    Task<string> GetUserId(long telegramId);
+    Task<string> GetInternalUserId(long telegramId);
 
     /// <summary>
     /// Получить коллекцию пользовательских подписок в бизнесе
@@ -108,4 +101,37 @@ public interface ISupabaseService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<bool> UpdateExistUser(string userId);
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<CandidateSpecialty> GetUserSubscription(string userId);
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <returns></returns>
+    Task<List<Vacancy>> ReadExistsVacancy();
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="postedVacancy"></param>
+    /// <returns></returns>
+    Task WriteNewVacancy(List<Vacancy> postedVacancy);
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <returns></returns>
+    Task<List<SubscribedVacancy>> GetAllUser();
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<long?> GetTelegramUserId(string userId);
 }

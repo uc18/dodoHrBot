@@ -1,121 +1,48 @@
-using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using DodoBot.Constants;
 using DodoBot.Interfaces;
-using DodoBot.Models.Huntflow.Response;
-using DodoBot.Options;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using DodoBot.Models.Huntflow;
 
 namespace DodoBot.Services;
 
-public class HuntflowService : IHuntflowService
+public class HuntflowService
 {
-    private readonly IOptions<ApplicationOptions> _options;
+    private readonly IHuntflowApi _huntflowApi;
 
-    private readonly HttpClient _httpClient;
-
-    private readonly ILogger<HuntflowService> _logger;
-
-    private readonly IAuthenticateService _authenticateService;
-
-    public HuntflowService(IOptions<ApplicationOptions> options, HttpClient httpClient,
-        ILogger<HuntflowService> logger, IAuthenticateService authenticateService)
+    public HuntflowService(IHuntflowApi huntflowApi)
     {
-        _options = options;
-        _httpClient = httpClient;
-        _logger = logger;
-        _authenticateService = authenticateService;
+        _huntflowApi = huntflowApi;
     }
 
-    public async Task<DictionaryResponse?> GetDodoStreamAsync()
+    public async Task<IEnumerable<HuntflowVacancy>> GetAllVacancies()
     {
-        return await SendMessage($"{_options.Value.HuntflowApiUrl}{UriApiConstants.Speciality}");
-    }
+        var pages = 1;
+        var totalPages = 0;
+        var notSortedVacancy = await _huntflowApi.GetVacanciesAsync(pages);
 
-    public async Task<DictionaryResponse?> GetDodoSubSpecialtyAsync()
-    {
-        return await SendMessage($"{_options.Value.HuntflowApiUrl}{UriApiConstants.SubSpeciality}");
-    }
+        var allVacancies = new List<HuntflowVacancy>();
 
-    public async Task<VacancyResponse?> GetVacanciesAsync(int page)
-    {
-        _logger.LogInformation("GetVacanciesAsync");
-
-        var uri = $"{_options.Value.HuntflowApiUrl}{UriApiConstants.Vacancies}?state=OPEN&page={page}";
-        var counter = 0;
-        do
+        if (notSortedVacancy != null)
         {
-            var token = await _authenticateService.GetRefreshToken();
-            var requestMessage = PrepareRequestMessage(uri, token);
-            var response = await _httpClient.SendAsync(requestMessage);
-            if (response.IsSuccessStatusCode)
+            allVacancies.AddRange(notSortedVacancy.Vacancies);
+            if (notSortedVacancy.TotalPages > pages)
             {
-                return await JsonSerializer.DeserializeAsync<VacancyResponse>(response.Content.ReadAsStream());
+                do
+                {
+                    pages++;
+                    var addingVacancy = await _huntflowApi.GetVacanciesAsync(pages);
+
+                    if (addingVacancy != null)
+                    {
+                        allVacancies.AddRange(addingVacancy.Vacancies);
+                        totalPages = addingVacancy.TotalPages;
+                    }
+                } while (totalPages > pages);
             }
 
-            counter++;
-        } while (counter < 3);
-
-        return null;
-    }
-
-    public async Task<DictionaryResponse?> GetWorkFormatAsync()
-    {
-        return await SendMessage($"{_options.Value.HuntflowApiUrl}{UriApiConstants.WorkFormat}");
-    }
-
-    public async Task<DictionaryResponse?> GetCityResponseAsync()
-    {
-        return await SendMessage($"{_options.Value.HuntflowApiUrl}{UriApiConstants.City}");
-    }
-
-    public async Task<DictionaryResponse?> GetGradeResponseAsync()
-    {
-        return await SendMessage($"{_options.Value.HuntflowApiUrl}{UriApiConstants.Grade}");
-    }
-
-    private async Task<DictionaryResponse?> SendMessage(string uri)
-    {
-        _logger.LogInformation("Sending message to Huntflow API");
-        var counter = 0;
-        try
-        {
-            do
-            {
-                var token = await _authenticateService.GetRefreshToken();
-                var requestMessage = PrepareRequestMessage(uri, token);
-                var response = await _httpClient.SendAsync(requestMessage);
-                if (response.IsSuccessStatusCode)
-                {
-                    return await JsonSerializer.DeserializeAsync<DictionaryResponse>(response.Content.ReadAsStream());
-                }
-
-                counter++;
-            } while (counter < 3);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error sending message to Huntflow API");
-            throw;
+            return allVacancies;
         }
 
-        return null;
-    }
-
-    private HttpRequestMessage PrepareRequestMessage(string uri, string accessToken)
-    {
-        var req = new HttpRequestMessage
-        {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri(uri)
-        };
-
-        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-        return req;
+        return [];
     }
 }

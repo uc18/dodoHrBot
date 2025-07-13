@@ -11,13 +11,13 @@ using Repository.Entities;
 
 namespace DodoBot.Services;
 
-public class SupabaseService : ISupabaseService
+public class SupabaseRepository : ISupabaseRepository
 {
     private readonly SupabaseContext _context;
 
-    private readonly ILogger<SupabaseService> _logger;
+    private readonly ILogger<SupabaseRepository> _logger;
 
-    public SupabaseService(SupabaseContext context, ILogger<SupabaseService> logger)
+    public SupabaseRepository(SupabaseContext context, ILogger<SupabaseRepository> logger)
     {
         _context = context;
         _logger = logger;
@@ -49,7 +49,7 @@ public class SupabaseService : ISupabaseService
         return user.Id;
     }
 
-    public async Task<string> GetUserId(long telegramId)
+    public async Task<string> GetInternalUserId(long telegramId)
     {
         var user = await _context
             .Candidates
@@ -64,22 +64,7 @@ public class SupabaseService : ISupabaseService
         return string.Empty;
     }
 
-    public async Task<bool> WritePeriodicitySettings(Candidate candidate)
-    {
-        try
-        {
-            await _context.Candidates.AddAsync(candidate);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.Message);
-            throw;
-        }
-    }
-
-    public async Task<int> UserVacancySubscribe(string userId)
+    public async Task<int> CountUserVacancySubscribe(string userId)
     {
         return await _context
             .SubscribedVacancies
@@ -152,6 +137,7 @@ public class SupabaseService : ISupabaseService
         {
             await _context.SubscribedVacancies.AddAsync(new SubscribedVacancy
             {
+                SpecialtyId = 55,
                 SubspecialtyId = subSpecialtyId,
                 Id = Guid.NewGuid().ToString(),
                 UserId = userId
@@ -227,7 +213,7 @@ public class SupabaseService : ISupabaseService
             .Include(t => t.Periodicity)
             .FirstOrDefaultAsync(t => t.Id == userId);
 
-        return candidate != null ? candidate.Periodicity.Settings : null;
+        return candidate?.Periodicity?.Settings;
     }
 
     public async Task<PeriodicitySettings?> WriteReadUserSubscribe(string userId, PeriodicitySettings setting)
@@ -239,7 +225,20 @@ public class SupabaseService : ISupabaseService
 
         if (candidate != null)
         {
-            candidate.Periodicity.Settings = setting;
+            if (candidate.Periodicity == null)
+            {
+                candidate.Periodicity = new Periodicity
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Settings = setting,
+                    StartNotify = DateTime.UtcNow,
+                    UserId = userId
+                };
+            }
+            else
+            {
+                candidate.Periodicity.Settings = setting;
+            }
 
             await _context.SaveChangesAsync();
 
@@ -253,13 +252,16 @@ public class SupabaseService : ISupabaseService
     {
         try
         {
-            var candidate = await _context.Candidates.FirstOrDefaultAsync(t => t.Id == userId);
+            var candidate = await _context
+                .Candidates
+                .Include(t => t.Periodicity)
+                .FirstOrDefaultAsync(t => t.Id == userId);
 
             if (candidate != null)
             {
                 candidate.Periodicity = new Periodicity
                 {
-                    Settings = PeriodicitySettings.EveryWeek,
+                    Settings = PeriodicitySettings.Enable,
                     StartNotify = DateTime.UtcNow,
                     Id = Guid.NewGuid().ToString()
                 };
@@ -275,5 +277,81 @@ public class SupabaseService : ISupabaseService
         }
 
         return false;
+    }
+
+    public async Task<CandidateSpecialty> GetUserSubscription(string userId)
+    {
+        try
+        {
+            var userInfo = await _context
+                .SubscribedVacancies
+                .AsNoTracking()
+                .Where(t => t.UserId == userId)
+                .ToListAsync();
+
+            if (userInfo.Count > 0)
+            {
+                return new CandidateSpecialty
+                {
+                    Specialty = userInfo.Where(t => t.SpecialtyId.HasValue).Select(t => t.SpecialtyId!.Value)
+                        .ToHashSet(),
+                    SubSpecialty = userInfo.Where(t => t.SubspecialtyId.HasValue).Select(t => t.SubspecialtyId!.Value)
+                        .ToHashSet()
+                };
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+        return null;
+    }
+
+    public async Task<List<SubscribedVacancy>> GetAllUser()
+    {
+        try
+        {
+            return await _context
+                .SubscribedVacancies
+                .Include(t => t.Candidates)
+                .ThenInclude(t => t.Periodicity)
+                .AsNoTracking()
+                .Where(t => t.Candidates.Periodicity.Settings == PeriodicitySettings.Enable)
+                .ToListAsync();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e.Message);
+            throw;
+        }
+    }
+
+    public async Task<List<Vacancy>> ReadExistsVacancy()
+    {
+        return await _context
+            .Vacancies
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+
+    public async Task WriteNewVacancy(List<Vacancy> postedVacancy)
+    {
+        await _context.Vacancies.AddRangeAsync(postedVacancy);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<long?> GetTelegramUserId(string userId)
+    {
+        var user = await _context.Candidates.AsNoTracking().FirstOrDefaultAsync(t => t.Id == userId);
+
+        if (user != null)
+        {
+            return user.TelegramId;
+        }
+
+        return null;
     }
 }
