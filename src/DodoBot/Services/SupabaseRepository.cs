@@ -279,7 +279,7 @@ public class SupabaseRepository : ISupabaseRepository
         return false;
     }
 
-    public async Task<CandidateSpecialty> GetUserSubscription(string userId)
+    public async Task<CandidateSpecialty?> GetUserSubscription(string userId)
     {
         try
         {

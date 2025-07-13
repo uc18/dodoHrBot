@@ -363,7 +363,7 @@ public class AnswerBotService
                 var subSpecialtyInfo = await _huntflowApi.GetDodoSubSpecialtyAsync();
 
                 var exists = new List<string>();
-                if (specialtyInfo != null)
+                if (specialtyInfo != null && userInfo != null)
                 {
                     var specialty = specialtyInfo
                         .Fields
@@ -372,7 +372,7 @@ public class AnswerBotService
                     exists.AddRange(specialty);
                 }
 
-                if (subSpecialtyInfo != null)
+                if (subSpecialtyInfo != null && userInfo != null)
                 {
                     var subSpecialty = subSpecialtyInfo
                         .Fields
@@ -382,7 +382,11 @@ public class AnswerBotService
                     exists.AddRange(subSpecialty);
                 }
 
-                var vacancy = exists.BuildCommaString();
+                var vacancy = "Нет подписок";
+                if (exists.Count > 0)
+                {
+                    vacancy = exists.BuildCommaString();
+                }
                 await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                     callbackQuery.Message.MessageId, vacancy, _buttonProvider.GetBackMenuButton());
 

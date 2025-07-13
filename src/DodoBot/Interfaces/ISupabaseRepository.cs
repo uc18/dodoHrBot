@@ -107,7 +107,7 @@ public interface ISupabaseRepository
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<CandidateSpecialty> GetUserSubscription(string userId);
+    Task<CandidateSpecialty?> GetUserSubscription(string userId);
 
     /// <summary>
     ///

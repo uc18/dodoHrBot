@@ -24,7 +24,7 @@ public static class VacancyExtension
         return sbVacancy.ToString();
     }
 
-    public static string BuildCommaString(this IEnumerable<string> values)
+    public static string BuildCommaString(this List<string> values)
     {
         var sb = new StringBuilder();
 
