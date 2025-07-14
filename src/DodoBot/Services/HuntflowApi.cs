@@ -4,7 +4,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
 using DodoBot.Constants;
-using DodoBot.Interfaces;
+using DodoBot.Interfaces.Services;
 using DodoBot.Models.Huntflow.Response;
 using DodoBot.Options;
 using Microsoft.Extensions.Logging;

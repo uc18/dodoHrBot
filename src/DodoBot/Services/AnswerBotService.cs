@@ -3,7 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using DodoBot.Constants;
 using DodoBot.Extensions;
-using DodoBot.Interfaces;
+using DodoBot.Interfaces.Repository;
+using DodoBot.Interfaces.Services;
 using DodoBot.Models;
 using DodoBot.Options;
 using DodoBot.Providers;
@@ -27,9 +28,10 @@ public class AnswerBotService
 
     private readonly HuntflowService _service;
 
-    public AnswerBotService(DodoBotMessageService messageService, ButtonProvider buttonProvider,
-        IHuntflowApi huntflowApi, ISupabaseRepository supabaseRepository,
-        IOptions<ApplicationOptions> options, HuntflowService service)
+    public AnswerBotService(DodoBotMessageService messageService,
+        ButtonProvider buttonProvider, IHuntflowApi huntflowApi,
+        ISupabaseRepository supabaseRepository, IOptions<ApplicationOptions> options,
+        HuntflowService service)
     {
         _messageService = messageService;
         _buttonProvider = buttonProvider;

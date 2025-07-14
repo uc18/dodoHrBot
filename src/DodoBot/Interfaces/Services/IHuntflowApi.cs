@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using DodoBot.Models.Huntflow.Response;
 
-namespace DodoBot.Interfaces;
+namespace DodoBot.Interfaces.Services;
 
 public interface IHuntflowApi
 {

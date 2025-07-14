@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using DodoBot.Models;
 using Repository.Entities;
 
-namespace DodoBot.Interfaces;
+namespace DodoBot.Interfaces.Repository;
 
 public interface ISupabaseRepository
 {

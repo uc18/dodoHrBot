@@ -1,5 +1,6 @@
 using DodoBot.Extensions;
-using DodoBot.Interfaces;
+using DodoBot.Interfaces.Repository;
+using DodoBot.Interfaces.Services;
 using DodoBot.Options;
 using DodoBot.Providers;
 using DodoBot.Services;

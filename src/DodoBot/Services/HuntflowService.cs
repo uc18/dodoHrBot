@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DodoBot.Interfaces;
+using DodoBot.Interfaces.Services;
 using DodoBot.Models.Huntflow;
 
 namespace DodoBot.Services;
