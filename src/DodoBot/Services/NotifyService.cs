@@ -83,7 +83,7 @@ public class NotifyService : INotifyService
                 }
             }
 
-            var allUsers = await _supabaseRepository.GetAllUser();
+            var allUsers = await _supabaseRepository.GetAllEnabledUsers();
             var usersWithVacancy = new Dictionary<string, List<VacancyToSend>>();
 
             foreach (var user in allUsers)
@@ -114,7 +114,7 @@ public class NotifyService : INotifyService
 
             if (usersWithVacancy.Count > 0)
             {
-                var startButton = _buttonProvider.GetBackMenuButton();
+                var startButton = _buttonProvider.GetFrequencyButton();
                 var perhapsPostedVacancies = new List<int>();
                 foreach (var userInfo in usersWithVacancy)
                 {

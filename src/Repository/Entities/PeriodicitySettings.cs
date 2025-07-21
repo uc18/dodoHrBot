@@ -7,5 +7,5 @@ public enum PeriodicitySettings
     [Description("Включено")] Enable = 1,
 
     [Description("Выключено")]
-    Disable = 4
+    Disable = 2
 }

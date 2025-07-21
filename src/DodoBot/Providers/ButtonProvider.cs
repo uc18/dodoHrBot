@@ -156,7 +156,7 @@ public class ButtonProvider
             {
                 new InlineKeyboardButton
                 {
-                    Text = existSpecialty.Contains(stream.Id) ? "◾️" + stream.Name : "▫️" + stream.Name,
+                    Text = existSpecialty.Contains(stream.Id) ? "✅" + stream.Name : "☑️" + stream.Name,
                     CallbackData = $"{typeOfStream}-{stream.Id}"
                 }
             }).ToList();
@@ -185,7 +185,7 @@ public class ButtonProvider
         };
     }
 
-    public InlineKeyboardMarkup GetBackMenuButton()
+    public InlineKeyboardMarkup GetFrequencyButton()
     {
         return new InlineKeyboardMarkup
         {
@@ -197,6 +197,24 @@ public class ButtonProvider
                     {
                         Text = "Выбери частоту рассылки",
                         CallbackData = "frequency"
+                    }
+                }
+            }
+        };
+    }
+
+    public InlineKeyboardMarkup GetMainMenu()
+    {
+        return new InlineKeyboardMarkup
+        {
+            Keyboard = new List<List<InlineKeyboardButton>>
+            {
+                new List<InlineKeyboardButton>
+                {
+                    new InlineKeyboardButton
+                    {
+                        Text = "Назад",
+                        CallbackData = "start"
                     }
                 }
             }

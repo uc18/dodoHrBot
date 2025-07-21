@@ -13,32 +13,14 @@ using TelegramLibrary.Models;
 
 namespace DodoBot.Services;
 
-public class AnswerBotService
+public class AnswerBotService(
+    DodoBotMessageService messageService,
+    ButtonProvider buttonProvider,
+    IHuntflowApi huntflowApi,
+    ISupabaseRepository supabaseRepository,
+    IOptions<ApplicationOptions> options,
+    HuntflowService service)
 {
-    private readonly DodoBotMessageService _messageService;
-
-    private readonly ButtonProvider _buttonProvider;
-
-    private readonly IHuntflowApi _huntflowApi;
-
-    private readonly ISupabaseRepository _supabaseRepository;
-
-    private readonly IOptions<ApplicationOptions> _options;
-
-    private readonly HuntflowService _service;
-
-    public AnswerBotService(DodoBotMessageService messageService, ButtonProvider buttonProvider,
-        IHuntflowApi huntflowApi, ISupabaseRepository supabaseRepository,
-        IOptions<ApplicationOptions> options, HuntflowService service)
-    {
-        _messageService = messageService;
-        _buttonProvider = buttonProvider;
-        _huntflowApi = huntflowApi;
-        _supabaseRepository = supabaseRepository;
-        _options = options;
-        _service = service;
-    }
-
     public async Task ProcessTextMessage(Message update)
     {
         if (update.Text.StartsWith("/"))
@@ -48,7 +30,7 @@ public class AnswerBotService
             {
                 case "start":
                 {
-                    var internalUserId = await _supabaseRepository.AddNewUser(new СandidateInfo
+                    var internalUserId = await supabaseRepository.AddNewUser(new СandidateInfo
                     {
                         FirstName = update.Chat.FirstName,
                         LastName = update.Chat.LastName,
@@ -57,37 +39,37 @@ public class AnswerBotService
 
                     if (internalUserId.Length > 0)
                     {
-                        var countedSubscribe = await _supabaseRepository.CountUserVacancySubscribe(internalUserId);
+                        var countedSubscribe = await supabaseRepository.CountUserVacancySubscribe(internalUserId);
                         var button = countedSubscribe > 0
-                            ? _buttonProvider.MainMenuButtons(countedSubscribe, _options.Value.PrivacyPolicyUrl)
-                            : _buttonProvider.MainMenuButtons(_options.Value.PrivacyPolicyUrl);
+                            ? buttonProvider.MainMenuButtons(countedSubscribe, options.Value.PrivacyPolicyUrl)
+                            : buttonProvider.MainMenuButtons(options.Value.PrivacyPolicyUrl);
 
-                        await _messageService.SendInlineMessage(update.Chat.Id, StaffConstants.BotAnswer, button);
+                        await messageService.SendInlineMessage(update.Chat.Id, StaffConstants.BotAnswer, button);
                     }
 
                     break;
                 }
                 case "about":
                 {
-                    var resources = await _supabaseRepository.GetResourcesDodo();
-                    var resourcesButtons = _buttonProvider.DodoResourcesButton(resources);
+                    var resources = await supabaseRepository.GetResourcesDodo();
+                    var resourcesButtons = buttonProvider.DodoResourcesButton(resources);
 
-                    await _messageService.SendInlineMessage(update.Chat.Id, StaffConstants.BotAnswer, resourcesButtons);
+                    await messageService.SendInlineMessage(update.Chat.Id, StaffConstants.BotAnswer, resourcesButtons);
                     break;
                 }
                 case "setting":
                 {
-                    var userId = await _supabaseRepository.GetInternalUserId(update.Chat.Id);
+                    var userId = await supabaseRepository.GetInternalUserId(update.Chat.Id);
                     if (userId.Length > 0)
                     {
-                        var countedSubscribe = await _supabaseRepository.CountUserVacancySubscribe(userId);
+                        var countedSubscribe = await supabaseRepository.CountUserVacancySubscribe(userId);
 
                         if (countedSubscribe > 0)
                         {
-                            var setting = await _supabaseRepository.ReadUserSubscribeOptions(userId);
+                            var setting = await supabaseRepository.ReadUserSubscribeOptions(userId);
                             var frequencyButton =
-                                _buttonProvider.ButtonsFrequencySetting(setting);
-                            await _messageService.SendInlineMessage(update.Chat.Id, "ttt", frequencyButton);
+                                buttonProvider.ButtonsFrequencySetting(setting);
+                            await messageService.SendInlineMessage(update.Chat.Id, "ttt", frequencyButton);
                         }
                     }
                     break;
@@ -99,24 +81,24 @@ public class AnswerBotService
                         new ResourceDto
                         {
                             Name = "Пользовательское соглашение",
-                            Url = _options.Value.PrivacyPolicyUrl
+                            Url = options.Value.PrivacyPolicyUrl
                         }
                     };
-                    var legalButton = _buttonProvider.DodoResourcesButton(resources);
+                    var legalButton = buttonProvider.DodoResourcesButton(resources);
 
-                    await _messageService.SendInlineMessage(update.Chat.Id, StaffConstants.LegalAnswer, legalButton);
+                    await messageService.SendInlineMessage(update.Chat.Id, StaffConstants.LegalAnswer, legalButton);
                     break;
                 }
                 default:
                 {
-                    await _messageService.SendMessageToUser(update.Chat.Id, StaffConstants.DontUnderstandYouUseButton);
+                    await messageService.SendMessageToUser(update.Chat.Id, StaffConstants.DontUnderstandYouUseButton);
                     break;
                 }
             }
         }
         else
         {
-            await _messageService.SendMessageToUser(update.Chat.Id, StaffConstants.DontUnderstandYouUseButton);
+            await messageService.SendMessageToUser(update.Chat.Id, StaffConstants.DontUnderstandYouUseButton);
         }
     }
 
@@ -127,66 +109,76 @@ public class AnswerBotService
         {
             case "start":
             {
-                var userId = await _supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
+                var userId = await supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
 
-                var countedSubscribe = await _supabaseRepository.CountUserVacancySubscribe(userId);
+                var countedSubscribe = await supabaseRepository.CountUserVacancySubscribe(userId);
                 var button = countedSubscribe > 0
-                    ? _buttonProvider.MainMenuButtons(countedSubscribe, _options.Value.PrivacyPolicyUrl)
-                    : _buttonProvider.MainMenuButtons(_options.Value.PrivacyPolicyUrl);
+                    ? buttonProvider.MainMenuButtons(countedSubscribe, options.Value.PrivacyPolicyUrl)
+                    : buttonProvider.MainMenuButtons(options.Value.PrivacyPolicyUrl);
 
-                await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                     callbackQuery.Message.MessageId, StaffConstants.BotAnswer, button);
                 break;
             }
             case "viewvacancy":
             case "mysubscription":
             {
-                var userId = await _supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
-                var it = await _supabaseRepository.GetUserSubSpecialty(userId);
-                var bussiness = await _supabaseRepository.GetUserSpecialty(userId);
+                var userId = await supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
+                var it = await supabaseRepository.GetUserSubSpecialty(userId);
+                var bussiness = await supabaseRepository.GetUserSpecialty(userId);
 
-                var itAndBusiness = _buttonProvider.EngineeringAndBusiness(it.Count, bussiness.Count);
+                var itAndBusiness = buttonProvider.EngineeringAndBusiness(it.Count, bussiness.Count);
 
-                await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                     callbackQuery.Message.MessageId, StaffConstants.WellSet, itAndBusiness);
 
                 break;
             }
             case "sendvacancies":
             {
-                var mainMenuButtons = _buttonProvider.MainMenuButtons(_options.Value.PrivacyPolicyUrl);
-                var userId = await _supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
-                var userInfo = await _supabaseRepository.GetUserSubscription(userId);
-                var allOpenVacancies = await _service.GetAllVacancies();
+                const int dodoEngineering = 55;
+                const int activePublication = 46;
+                var mainMenu = buttonProvider.GetMainMenu();
+                var userId = await supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
+                var userInfo = await supabaseRepository.GetUserSubscription(userId);
+                var allOpenVacancies = await service.GetAllVacancies();
 
                 var finalVacancies = new List<VacancyDto>();
-                var staffVacancies = allOpenVacancies.ToList();
+                var staffVacancies = allOpenVacancies
+                    .Where(t => t.CareerPublication == activePublication)
+                    .ToList();
 
-                if (staffVacancies.Any())
+                if (staffVacancies.Any() && userInfo != null)
                 {
                     foreach (var staffVacancy in staffVacancies)
                     {
                         if (staffVacancy.Speciality.HasValue)
                         {
-                            if (userInfo.Specialty.Contains(staffVacancy.Speciality.Value))
+                            if (staffVacancy.Speciality == dodoEngineering &&
+                                userInfo.Specialty.Contains(staffVacancy.Speciality.Value))
                             {
-                                finalVacancies.Add(new VacancyDto
+                                if (staffVacancy.SubSpeciality.HasValue)
                                 {
-                                    Id = staffVacancy.Id,
-                                    Position = staffVacancy.Position,
-                                    Url = $"Подробнее: {StaffConstants.DodoUrl}{staffVacancy.Id}"
-                                });
+                                    if (userInfo.SubSpecialty.Contains(staffVacancy.SubSpeciality.Value))
+                                    {
+                                        finalVacancies.Add(new VacancyDto
+                                        {
+                                            Id = staffVacancy.Id,
+                                            Position = staffVacancy.Position ?? "текст позиции не найден",
+                                            Url = $"Подробнее: {StaffConstants.DodoUrl}{staffVacancy.Id}"
+                                        });
+                                        continue;
+                                    }
+                                }
                             }
-                        }
 
-                        if (staffVacancy.SubSpeciality.HasValue)
-                        {
-                            if (userInfo.SubSpecialty.Contains(staffVacancy.SubSpeciality.Value))
+                            if (staffVacancy.Speciality != dodoEngineering &&
+                                userInfo.Specialty.Contains(staffVacancy.Speciality.Value))
                             {
                                 finalVacancies.Add(new VacancyDto
                                 {
                                     Id = staffVacancy.Id,
-                                    Position = staffVacancy.Position,
+                                    Position = staffVacancy.Position ?? "текст позиции не найден",
                                     Url = $"Подробнее: {StaffConstants.DodoUrl}{staffVacancy.Id}"
                                 });
                             }
@@ -195,12 +187,12 @@ public class AnswerBotService
 
                     var vacancyText = VacancyExtension.PrepareVacancyText(finalVacancies);
 
-                    await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
-                        callbackQuery.Message.MessageId, vacancyText, mainMenuButtons);
+                    await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                        callbackQuery.Message.MessageId, vacancyText, mainMenu);
                 }
                 else
                 {
-                    await _messageService.SendMessageToUser(callbackQuery.Message.Chat.Id,
+                    await messageService.SendMessageToUser(callbackQuery.Message.Chat.Id,
                         StaffConstants.VacanciesNotFound);
                 }
 
@@ -208,11 +200,11 @@ public class AnswerBotService
             }
             case "it":
             {
-                var subSpecialtyResponse = await _huntflowApi.GetDodoSubSpecialtyAsync();
+                var subSpecialtyResponse = await huntflowApi.GetDodoSubSpecialtyAsync();
                 if (subSpecialtyResponse != null)
                 {
-                    var userId = await _supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
-                    var userSubSpecialty = await _supabaseRepository.GetUserSubSpecialty(userId);
+                    var userId = await supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
+                    var userSubSpecialty = await supabaseRepository.GetUserSubSpecialty(userId);
 
                     var sortedSubSpecialties = subSpecialtyResponse
                         .Fields
@@ -220,9 +212,9 @@ public class AnswerBotService
                         .ToList();
 
                     var buttons =
-                        _buttonProvider.GetDodoStreamButtons(sortedSubSpecialties, "subspecialty", userSubSpecialty);
+                        buttonProvider.GetDodoStreamButtons(sortedSubSpecialties, "subspecialty", userSubSpecialty);
 
-                    await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                    await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                         callbackQuery.Message.MessageId, StaffConstants.OneOrMore, buttons);
                 }
 
@@ -230,58 +222,58 @@ public class AnswerBotService
             }
             case "business":
             {
-                var dodoStreams = await _huntflowApi.GetDodoStreamAsync();
+                var dodoStreams = await huntflowApi.GetDodoStreamAsync();
                 if (dodoStreams != null)
                 {
-                    var userId = await _supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
-                    var userSpecialty = await _supabaseRepository.GetUserSpecialty(userId);
+                    var userId = await supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
+                    var userSpecialty = await supabaseRepository.GetUserSpecialty(userId);
 
                     var sortedStreams = dodoStreams
                         .Fields
                         .Where(t => t.Active && t.Id != 55)
                         .ToList();
 
-                    var buttons = _buttonProvider.GetDodoStreamButtons(sortedStreams, "specialty", userSpecialty);
-                    await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                    var buttons = buttonProvider.GetDodoStreamButtons(sortedStreams, "specialty", userSpecialty);
+                    await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                         callbackQuery.Message.MessageId, StaffConstants.OneOrMore, buttons);
                 }
                 else
                 {
-                    await _messageService.SendMessageToUser(callbackQuery.Message.Chat.Id, StaffConstants.DontWork);
+                    await messageService.SendMessageToUser(callbackQuery.Message.Chat.Id, StaffConstants.DontWork);
                 }
                 break;
             }
 
             case "specialty":
             {
-                var dodoStreams = await _huntflowApi.GetDodoStreamAsync();
-                var userId = await _supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
+                var dodoStreams = await huntflowApi.GetDodoStreamAsync();
+                var userId = await supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
 
                 if (int.TryParse(sp[1], out var specialtyId))
                 {
                     if (userId.Length > 0)
                     {
-                        var previousSpecialty = await _supabaseRepository.GetUserSpecialty(userId);
+                        var previousSpecialty = await supabaseRepository.GetUserSpecialty(userId);
                         if (previousSpecialty.Contains(specialtyId))
                         {
-                            await _supabaseRepository.RemoveSpecialty(specialtyId, userId);
+                            await supabaseRepository.RemoveSpecialty(specialtyId, userId);
                         }
                         else
                         {
-                            await _supabaseRepository.WriteSpecialty(specialtyId, userId);
+                            await supabaseRepository.WriteSpecialty(specialtyId, userId);
                         }
                     }
 
                     if (dodoStreams != null)
                     {
-                        var newSpecialty = await _supabaseRepository.GetUserSpecialty(userId);
+                        var newSpecialty = await supabaseRepository.GetUserSpecialty(userId);
                         var sortedStreams = dodoStreams
                             .Fields
                             .Where(t => t.Active && t.Id != 55)
                             .ToList();
-                        var buttons = _buttonProvider.GetDodoStreamButtons(sortedStreams, "specialty", newSpecialty);
+                        var buttons = buttonProvider.GetDodoStreamButtons(sortedStreams, "specialty", newSpecialty);
 
-                        await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                        await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                             callbackQuery.Message.MessageId, StaffConstants.OneOrMore,
                             buttons);
                     }
@@ -291,34 +283,34 @@ public class AnswerBotService
             }
             case "subspecialty":
             {
-                var subSpecialtyResponse = await _huntflowApi.GetDodoSubSpecialtyAsync();
-                var userId = await _supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
+                var subSpecialtyResponse = await huntflowApi.GetDodoSubSpecialtyAsync();
+                var userId = await supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
 
                 if (int.TryParse(sp[1], out var subsSpecialtyId))
                 {
                     if (userId.Length > 0)
                     {
-                        var previousSubSpecialty = await _supabaseRepository.GetUserSubSpecialty(userId);
+                        var previousSubSpecialty = await supabaseRepository.GetUserSubSpecialty(userId);
                         if (previousSubSpecialty.Contains(subsSpecialtyId))
                         {
-                            await _supabaseRepository.RemoveSubSpecialty(subsSpecialtyId, userId);
+                            await supabaseRepository.RemoveSubSpecialty(subsSpecialtyId, userId);
                         }
                         else
                         {
-                            await _supabaseRepository.WriteSubSpecialty(subsSpecialtyId, userId);
+                            await supabaseRepository.WriteSubSpecialty(subsSpecialtyId, userId);
                         }
                     }
 
                     if (subSpecialtyResponse != null)
                     {
-                        var newSubSpecialty = await _supabaseRepository.GetUserSubSpecialty(userId);
+                        var newSubSpecialty = await supabaseRepository.GetUserSubSpecialty(userId);
                         var sortedStreams = subSpecialtyResponse
                             .Fields
                             .Where(t => t.Active && t.Id != 55)
                             .ToList();
                         var buttons =
-                            _buttonProvider.GetDodoStreamButtons(sortedStreams, "subspecialty", newSubSpecialty);
-                        await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                            buttonProvider.GetDodoStreamButtons(sortedStreams, "subspecialty", newSubSpecialty);
+                        await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                             callbackQuery.Message.MessageId, StaffConstants.OneOrMore,
                             buttons);
                     }
@@ -328,16 +320,16 @@ public class AnswerBotService
             }
             case "support":
             {
-                await _messageService.SendMessageToUser(callbackQuery.Message.Chat.Id,
+                await messageService.SendMessageToUser(callbackQuery.Message.Chat.Id,
                     "Напишите на hr-team@dodobrands.io");
                 break;
             }
             case "viewcompany":
             {
-                var resources = await _supabaseRepository.GetResourcesDodo();
-                var resourcesButtons = _buttonProvider.DodoResourcesButton(resources);
+                var resources = await supabaseRepository.GetResourcesDodo();
+                var resourcesButtons = buttonProvider.DodoResourcesButton(resources);
 
-                await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                     callbackQuery.Message.MessageId, "Вот несколько мест, где ты можешь узнать о нас больше:",
                     resourcesButtons);
 
@@ -345,22 +337,22 @@ public class AnswerBotService
             }
             case "back":
             {
-                var userId = await _supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
-                var it = await _supabaseRepository.GetUserSubSpecialty(userId);
-                var bussiness = await _supabaseRepository.GetUserSpecialty(userId);
+                var userId = await supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
+                var it = await supabaseRepository.GetUserSubSpecialty(userId);
+                var bussiness = await supabaseRepository.GetUserSpecialty(userId);
 
-                var itAndBusiness = _buttonProvider.EngineeringAndBusiness(it.Count, bussiness.Count);
-                await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                var itAndBusiness = buttonProvider.EngineeringAndBusiness(it.Count, bussiness.Count);
+                await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                     callbackQuery.Message.MessageId, StaffConstants.WellSet, itAndBusiness);
                 break;
             }
             case "set":
             {
-                var userId = await _supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
+                var userId = await supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
 
-                var userInfo = await _supabaseRepository.GetUserSubscription(userId);
-                var specialtyInfo = await _huntflowApi.GetDodoStreamAsync();
-                var subSpecialtyInfo = await _huntflowApi.GetDodoSubSpecialtyAsync();
+                var userInfo = await supabaseRepository.GetUserSubscription(userId);
+                var specialtyInfo = await huntflowApi.GetDodoStreamAsync();
+                var subSpecialtyInfo = await huntflowApi.GetDodoSubSpecialtyAsync();
 
                 var exists = new List<string>();
                 if (specialtyInfo != null && userInfo != null)
@@ -387,14 +379,15 @@ public class AnswerBotService
                 {
                     vacancy = exists.BuildCommaString();
                 }
-                await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
-                    callbackQuery.Message.MessageId, vacancy, _buttonProvider.GetBackMenuButton());
+
+                await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                    callbackQuery.Message.MessageId, vacancy, buttonProvider.GetFrequencyButton());
 
                 break;
             }
             case "changefrequency":
             {
-                var userId = await _supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
+                var userId = await supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
 
                 if (userId.Length > 0)
                 {
@@ -404,10 +397,10 @@ public class AnswerBotService
 
                         if (newSettings.HasValue)
                         {
-                            var result = await _supabaseRepository.WriteReadUserSubscribe(userId, newSettings.Value);
+                            var result = await supabaseRepository.WriteReadUserSubscribe(userId, newSettings.Value);
 
-                            var timingButton = _buttonProvider.ButtonsFrequencySetting(result);
-                            await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                            var timingButton = buttonProvider.ButtonsFrequencySetting(result);
+                            await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                                 callbackQuery.Message.MessageId,
                                 "Теперь у тебя другая частота рассылки и она отмечена ✅", timingButton);
                         }
@@ -418,25 +411,25 @@ public class AnswerBotService
             }
             case "frequency":
             {
-                var userId = await _supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
+                var userId = await supabaseRepository.GetInternalUserId(callbackQuery.User.Id);
 
                 if (userId.Length > 0)
                 {
-                    var result = await _supabaseRepository.ReadUserSubscribeOptions(userId);
+                    var result = await supabaseRepository.ReadUserSubscribeOptions(userId);
 
                     if (result.HasValue)
                     {
-                        var timingButton = _buttonProvider.ButtonsFrequencySetting(result);
-                        await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                        var timingButton = buttonProvider.ButtonsFrequencySetting(result);
+                        await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                             callbackQuery.Message.MessageId, "Выбери частоту рассылки: ", timingButton);
                     }
                     else
                     {
-                        result = await _supabaseRepository.WriteReadUserSubscribe(userId,
+                        result = await supabaseRepository.WriteReadUserSubscribe(userId,
                             PeriodicitySettings.Enable);
 
-                        var timingButton = _buttonProvider.ButtonsFrequencySetting(result);
-                        await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                        var timingButton = buttonProvider.ButtonsFrequencySetting(result);
+                        await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                             callbackQuery.Message.MessageId, "Выбери частоту рассылки: ", timingButton);
                     }
                 }
@@ -445,8 +438,8 @@ public class AnswerBotService
             }
             default:
             {
-                var backMainMenuButton = _buttonProvider.GetBackMenuButton();
-                await _messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                var backMainMenuButton = buttonProvider.GetMainMenu();
+                await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                     callbackQuery.Message.MessageId, "Неизвестная кнопка",
                     backMainMenuButton);
                 break;

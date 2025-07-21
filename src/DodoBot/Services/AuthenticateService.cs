@@ -33,39 +33,39 @@ public class AuthenticateService : IAuthenticateService
         HuntflowDodoBrandsApiUrl = options.Value.HuntflowApiUrl;
     }
 
-    public async Task<string> GetRefreshToken()
+    public string GetExistsAccessToken()
     {
-        if (_expirationDate < DateTime.UtcNow)
+        return _expirationDate < DateTime.UtcNow ? string.Empty : AccessToken;
+    }
+
+    public async Task<string> GetNewAccessToken()
+    {
+        var content = JsonContent.Create(new TokenRequest
         {
-            var content = JsonContent.Create(new TokenRequest
+            Token = RefreshToken
+        });
+        _httpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", AccessToken);
+
+        var request = await _httpClient.PostAsync(
+            $"{HuntflowDodoBrandsApiUrl}{UriApiConstants.RefreshTokenUri}", content);
+
+        if (request.IsSuccessStatusCode)
+        {
+            var response = await request.Content.ReadAsStreamAsync();
+
+            var tokenResponse = await JsonSerializer.DeserializeAsync<TokenResponse>(response);
+
+            if (tokenResponse != null)
             {
-                Token = RefreshToken
-            });
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", AccessToken);
+                AccessToken = tokenResponse.AccessToken;
+                RefreshToken = tokenResponse.RefreshToken;
+                _expirationDate = DateTime.UtcNow.AddSeconds(tokenResponse.AccessTokenExpiration);
 
-            var request = await _httpClient.PostAsync(
-                $"{HuntflowDodoBrandsApiUrl}{UriApiConstants.RefreshTokenUri}", content);
-
-            if (request.IsSuccessStatusCode)
-            {
-                var response = await request.Content.ReadAsStreamAsync();
-
-                var tokenResponse = await JsonSerializer.DeserializeAsync<TokenResponse>(response);
-
-                if (tokenResponse != null)
-                {
-                    AccessToken = tokenResponse.AccessToken;
-                    RefreshToken = tokenResponse.RefreshToken;
-                    _expirationDate = DateTime.UtcNow.AddSeconds(tokenResponse.AccessTokenExpiration);
-
-                    return AccessToken;
-                }
+                return AccessToken;
             }
-
-            return string.Empty;
         }
 
-        return AccessToken;
+        return string.Empty;
     }
 }

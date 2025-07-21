@@ -4,5 +4,7 @@ namespace DodoBot.Interfaces;
 
 public interface IAuthenticateService
 {
-    Task<string> GetRefreshToken();
+    string GetExistsAccessToken();
+
+    Task<string> GetNewAccessToken();
 }

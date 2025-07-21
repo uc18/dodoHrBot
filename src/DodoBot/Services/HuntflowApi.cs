@@ -47,15 +47,22 @@ public class HuntflowApi : IHuntflowApi
 
         var uri = $"{_options.Value.HuntflowApiUrl}{UriApiConstants.Vacancies}?state=OPEN&page={page}";
         var counter = 0;
+        var isTokenValid = true;
         do
         {
-            var token = await _authenticateService.GetRefreshToken();
-            var requestMessage = PrepareRequestMessage(uri, token);
-            var response = await _httpClient.SendAsync(requestMessage);
-            if (response.IsSuccessStatusCode)
+            var token = await GetToken(isTokenValid);
+
+            if (token.Length > 0)
             {
-                return await JsonSerializer.DeserializeAsync<VacancyResponse>(response.Content.ReadAsStream());
+                var requestMessage = PrepareRequestMessage(uri, token);
+                var response = await _httpClient.SendAsync(requestMessage);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await JsonSerializer.DeserializeAsync<VacancyResponse>(response.Content.ReadAsStream());
+                }
             }
+
+            isTokenValid = false;
 
             counter++;
         } while (counter < 3);
@@ -67,17 +74,24 @@ public class HuntflowApi : IHuntflowApi
     {
         _logger.LogInformation("Sending message to Huntflow API");
         var counter = 0;
+        var isTokenValid = true;
         try
         {
             do
             {
-                var token = await _authenticateService.GetRefreshToken();
-                var requestMessage = PrepareRequestMessage(uri, token);
-                var response = await _httpClient.SendAsync(requestMessage);
-                if (response.IsSuccessStatusCode)
+                var token = await GetToken(isTokenValid);
+                if (token.Length > 0)
                 {
-                    return await JsonSerializer.DeserializeAsync<DictionaryResponse>(response.Content.ReadAsStream());
+                    var requestMessage = PrepareRequestMessage(uri, token);
+                    var response = await _httpClient.SendAsync(requestMessage);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return await JsonSerializer.DeserializeAsync<DictionaryResponse>(
+                            response.Content.ReadAsStream());
+                    }
                 }
+
+                isTokenValid = false;
 
                 counter++;
             } while (counter < 3);
@@ -102,5 +116,12 @@ public class HuntflowApi : IHuntflowApi
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         return req;
+    }
+
+    private async Task<string> GetToken(bool isTokenValid)
+    {
+        return isTokenValid
+            ? _authenticateService.GetExistsAccessToken()
+            : await _authenticateService.GetNewAccessToken();
     }
 }

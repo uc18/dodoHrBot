@@ -126,7 +126,7 @@ public interface ISupabaseRepository
     ///
     /// </summary>
     /// <returns></returns>
-    Task<List<SubscribedVacancy>> GetAllUser();
+    Task<List<SubscribedVacancy>> GetAllEnabledUsers();
 
     /// <summary>
     ///

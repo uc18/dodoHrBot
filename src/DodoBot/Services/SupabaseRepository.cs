@@ -309,7 +309,7 @@ public class SupabaseRepository : ISupabaseRepository
         return null;
     }
 
-    public async Task<List<SubscribedVacancy>> GetAllUser()
+    public async Task<List<SubscribedVacancy>> GetAllEnabledUsers()
     {
         try
         {

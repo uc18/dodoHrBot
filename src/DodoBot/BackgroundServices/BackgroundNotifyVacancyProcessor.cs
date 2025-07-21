@@ -45,7 +45,7 @@ public class BackgroundNotifyVacancyProcessor : BackgroundService
     private async Task DoAsync(CancellationToken stoppingToken)
     {
         var scope = _serviceProvider.CreateScope();
-        var anotherService = scope.ServiceProvider.GetRequiredService<INotifyService>();
-        await anotherService.SendNotifyAllUsers();
+        var notifyService = scope.ServiceProvider.GetRequiredService<INotifyService>();
+        await notifyService.SendNotifyAllUsers();
     }
 }
