@@ -359,7 +359,9 @@ public class AnswerBotService(
                 {
                     var specialty = specialtyInfo
                         .Fields
-                        .Where(t => t.Active && userInfo.Specialty.Contains(t.Id))
+                        .Where(t => t.Active &&
+                                    t.Id != 55
+                                    && userInfo.Specialty.Contains(t.Id))
                         .Select(t => t.Name);
                     exists.AddRange(specialty);
                 }
@@ -368,7 +370,8 @@ public class AnswerBotService(
                 {
                     var subSpecialty = subSpecialtyInfo
                         .Fields
-                        .Where(t => t.Active && userInfo.SubSpecialty.Contains(t.Id))
+                        .Where(t => t.Active
+                                    && userInfo.SubSpecialty.Contains(t.Id))
                         .Select(t => t.Name);
 
                     exists.AddRange(subSpecialty);

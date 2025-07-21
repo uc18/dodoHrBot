@@ -77,7 +77,9 @@ public class SupabaseRepository : ISupabaseRepository
         var specialtiesUser = await _context
             .SubscribedVacancies
             .AsNoTracking()
-            .Where(t => t.UserId == userId && t.SpecialtyId != null)
+            .Where(t => t.UserId == userId
+                        && t.SpecialtyId != 55
+                        && t.SpecialtyId != null)
             .Select(t => t.SpecialtyId!.Value)
             .ToListAsync();
 
