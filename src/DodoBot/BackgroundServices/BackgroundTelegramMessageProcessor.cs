@@ -28,7 +28,7 @@ public class BackgroundTelegramMessageProcessor : BackgroundService
 
     private async Task DoAsync(CancellationToken stoppingToken)
     {
-        var scope = _provider.CreateScope();
+        using var scope = _provider.CreateScope();
         var messageService = scope.ServiceProvider.GetRequiredService<DodoBotMessageService>();
         var answerService = scope.ServiceProvider.GetRequiredService<AnswerBotService>();
 
