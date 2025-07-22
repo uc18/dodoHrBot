@@ -1,7 +1,9 @@
 using DodoBot.Extensions;
+using DodoBot.Integrations;
 using DodoBot.Interfaces;
 using DodoBot.Options;
 using DodoBot.Providers;
+using DodoBot.Repositories;
 using DodoBot.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +16,6 @@ builder.Services.AddLogging();
 builder.Services.AddSupabaseContext(configuration);
 builder.Services.AddSingleton<IAuthenticateService, AuthenticateService>();
 builder.Services.AddScoped<DodoBotMessageService>();
-builder.Services.AddSingleton<UserContextProvider>();
 builder.Services.AddScoped<ButtonProvider>();
 builder.Services.AddScoped<AnswerBotService>();
 builder.Services.AddScoped<IHuntflowApi, HuntflowApi>();

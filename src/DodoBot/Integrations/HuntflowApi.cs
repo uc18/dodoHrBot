@@ -10,42 +10,30 @@ using DodoBot.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace DodoBot.Services;
+namespace DodoBot.Integrations;
 
-public class HuntflowApi : IHuntflowApi
+public class HuntflowApi(
+    IOptions<ApplicationOptions> options,
+    HttpClient httpClient,
+    ILogger<HuntflowApi> logger,
+    IAuthenticateService authenticateService)
+    : IHuntflowApi
 {
-    private readonly IOptions<ApplicationOptions> _options;
-
-    private readonly HttpClient _httpClient;
-
-    private readonly ILogger<HuntflowApi> _logger;
-
-    private readonly IAuthenticateService _authenticateService;
-
-    public HuntflowApi(IOptions<ApplicationOptions> options, HttpClient httpClient,
-        ILogger<HuntflowApi> logger, IAuthenticateService authenticateService)
-    {
-        _options = options;
-        _httpClient = httpClient;
-        _logger = logger;
-        _authenticateService = authenticateService;
-    }
-
     public async Task<DictionaryResponse?> GetDodoStreamAsync()
     {
-        return await SendMessage($"{_options.Value.HuntflowApiUrl}{UriApiConstants.Speciality}");
+        return await SendMessage($"{options.Value.HuntflowApiUrl}{UriApiConstants.Speciality}");
     }
 
     public async Task<DictionaryResponse?> GetDodoSubSpecialtyAsync()
     {
-        return await SendMessage($"{_options.Value.HuntflowApiUrl}{UriApiConstants.SubSpeciality}");
+        return await SendMessage($"{options.Value.HuntflowApiUrl}{UriApiConstants.SubSpeciality}");
     }
 
     public async Task<VacancyResponse?> GetVacanciesAsync(int page)
     {
-        _logger.LogInformation("GetVacanciesAsync");
+        logger.LogInformation("GetVacanciesAsync");
 
-        var uri = $"{_options.Value.HuntflowApiUrl}{UriApiConstants.Vacancies}?state=OPEN&page={page}";
+        var uri = $"{options.Value.HuntflowApiUrl}{UriApiConstants.Vacancies}?state=OPEN&page={page}";
         var counter = 0;
         var isTokenValid = true;
         do
@@ -55,7 +43,7 @@ public class HuntflowApi : IHuntflowApi
             if (token.Length > 0)
             {
                 var requestMessage = PrepareRequestMessage(uri, token);
-                var response = await _httpClient.SendAsync(requestMessage);
+                var response = await httpClient.SendAsync(requestMessage);
                 if (response.IsSuccessStatusCode)
                 {
                     return await JsonSerializer.DeserializeAsync<VacancyResponse>(response.Content.ReadAsStream());
@@ -72,7 +60,7 @@ public class HuntflowApi : IHuntflowApi
 
     private async Task<DictionaryResponse?> SendMessage(string uri)
     {
-        _logger.LogInformation("Sending message to Huntflow API");
+        logger.LogInformation("Sending message to Huntflow API");
         var counter = 0;
         var isTokenValid = true;
         try
@@ -83,7 +71,7 @@ public class HuntflowApi : IHuntflowApi
                 if (token.Length > 0)
                 {
                     var requestMessage = PrepareRequestMessage(uri, token);
-                    var response = await _httpClient.SendAsync(requestMessage);
+                    var response = await httpClient.SendAsync(requestMessage);
                     if (response.IsSuccessStatusCode)
                     {
                         return await JsonSerializer.DeserializeAsync<DictionaryResponse>(
@@ -98,7 +86,7 @@ public class HuntflowApi : IHuntflowApi
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error sending message to Huntflow API");
+            logger.LogError(e, "Error sending message to Huntflow API");
             throw;
         }
 
@@ -121,7 +109,7 @@ public class HuntflowApi : IHuntflowApi
     private async Task<string> GetToken(bool isTokenValid)
     {
         return isTokenValid
-            ? _authenticateService.GetExistsAccessToken()
-            : await _authenticateService.GetNewAccessToken();
+            ? authenticateService.GetExistsAccessToken()
+            : await authenticateService.GetNewAccessToken();
     }
 }

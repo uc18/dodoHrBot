@@ -9,14 +9,9 @@ using TelegramLibrary.Models.Keyboard;
 
 namespace DodoBot.Services;
 
-public class DodoBotMessageService
+public class DodoBotMessageService(HttpClient httpClient, IOptions<ApplicationOptions> options)
 {
-    private readonly TelegramBot _bot;
-
-    public DodoBotMessageService(HttpClient httpClient, IOptions<ApplicationOptions> options)
-    {
-        _bot = new TelegramBot(options.Value.TelegramApiUrl, options.Value.TelegramBotToken, httpClient);
-    }
+    private readonly TelegramBot _bot = new(options.Value.TelegramApiUrl, options.Value.TelegramBotToken, httpClient);
 
     public async Task SendMessageToUser(long chatUserId, string textMessage)
     {

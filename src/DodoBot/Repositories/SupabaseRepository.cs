@@ -9,29 +9,20 @@ using Microsoft.Extensions.Logging;
 using Repository;
 using Repository.Entities;
 
-namespace DodoBot.Services;
+namespace DodoBot.Repositories;
 
-public class SupabaseRepository : ISupabaseRepository
+public class SupabaseRepository(SupabaseContext context, ILogger<SupabaseRepository> logger)
+    : ISupabaseRepository
 {
-    private readonly SupabaseContext _context;
-
-    private readonly ILogger<SupabaseRepository> _logger;
-
-    public SupabaseRepository(SupabaseContext context, ILogger<SupabaseRepository> logger)
-    {
-        _context = context;
-        _logger = logger;
-    }
-
     public async Task<string> AddNewUser(СandidateInfo candidate)
     {
-        var user = await _context
+        var user = await context
             .Candidates
             .FirstOrDefaultAsync(t => t.TelegramId == candidate.TelegramId);
 
         if (user == null)
         {
-            var newUser = await _context
+            var newUser = await context
                 .Candidates
                 .AddAsync(new Candidate
                 {
@@ -41,7 +32,7 @@ public class SupabaseRepository : ISupabaseRepository
                     LastName = candidate.LastName
                 });
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return newUser.Entity.Id;
         }
@@ -51,7 +42,7 @@ public class SupabaseRepository : ISupabaseRepository
 
     public async Task<string> GetInternalUserId(long telegramId)
     {
-        var user = await _context
+        var user = await context
             .Candidates
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.TelegramId == telegramId);
@@ -66,7 +57,7 @@ public class SupabaseRepository : ISupabaseRepository
 
     public async Task<int> CountUserVacancySubscribe(string userId)
     {
-        return await _context
+        return await context
             .SubscribedVacancies
             .AsNoTracking()
             .CountAsync(t => t.UserId == userId);
@@ -74,7 +65,7 @@ public class SupabaseRepository : ISupabaseRepository
 
     public async Task<HashSet<int>> GetUserSpecialty(string userId)
     {
-        var specialtiesUser = await _context
+        var specialtiesUser = await context
             .SubscribedVacancies
             .AsNoTracking()
             .Where(t => t.UserId == userId
@@ -90,18 +81,18 @@ public class SupabaseRepository : ISupabaseRepository
     {
         try
         {
-            await _context.SubscribedVacancies.AddAsync(new SubscribedVacancy
+            await context.SubscribedVacancies.AddAsync(new SubscribedVacancy
             {
                 SpecialtyId = specialtyId,
                 Id = Guid.NewGuid().ToString(),
                 UserId = userId
             });
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
+            logger.LogError(e.Message);
             throw;
         }
 
@@ -112,21 +103,21 @@ public class SupabaseRepository : ISupabaseRepository
     {
         try
         {
-            var subscribe = await _context
+            var subscribe = await context
                 .SubscribedVacancies
                 .FirstOrDefaultAsync(t => t.SpecialtyId == specialtyId && t.UserId == userId);
 
             if (subscribe != null)
             {
-                _context.SubscribedVacancies.Remove(subscribe);
-                await _context.SaveChangesAsync();
+                context.SubscribedVacancies.Remove(subscribe);
+                await context.SaveChangesAsync();
 
                 return true;
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
+            logger.LogError(e.Message);
             throw;
         }
 
@@ -137,7 +128,7 @@ public class SupabaseRepository : ISupabaseRepository
     {
         try
         {
-            await _context.SubscribedVacancies.AddAsync(new SubscribedVacancy
+            await context.SubscribedVacancies.AddAsync(new SubscribedVacancy
             {
                 SpecialtyId = 55,
                 SubspecialtyId = subSpecialtyId,
@@ -145,11 +136,11 @@ public class SupabaseRepository : ISupabaseRepository
                 UserId = userId
             });
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
+            logger.LogError(e.Message);
             throw;
         }
 
@@ -160,21 +151,21 @@ public class SupabaseRepository : ISupabaseRepository
     {
         try
         {
-            var subscribe = await _context
+            var subscribe = await context
                 .SubscribedVacancies
                 .FirstOrDefaultAsync(t => t.SubspecialtyId == subSpecialtyId && t.UserId == userId);
 
             if (subscribe != null)
             {
-                _context.SubscribedVacancies.Remove(subscribe);
-                await _context.SaveChangesAsync();
+                context.SubscribedVacancies.Remove(subscribe);
+                await context.SaveChangesAsync();
 
                 return true;
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
+            logger.LogError(e.Message);
             throw;
         }
 
@@ -183,7 +174,7 @@ public class SupabaseRepository : ISupabaseRepository
 
     public async Task<HashSet<int>> GetUserSubSpecialty(string userId)
     {
-        var specialtiesUser = await _context
+        var specialtiesUser = await context
             .SubscribedVacancies
             .AsNoTracking()
             .Where(t => t.UserId == userId && t.SubspecialtyId != null)
@@ -195,7 +186,7 @@ public class SupabaseRepository : ISupabaseRepository
 
     public async Task<List<ResourceDto>> GetResourcesDodo()
     {
-        var resources = await _context
+        var resources = await context
             .Resources
             .AsNoTracking()
             .ToListAsync();
@@ -209,7 +200,7 @@ public class SupabaseRepository : ISupabaseRepository
 
     public async Task<PeriodicitySettings?> ReadUserSubscribeOptions(string userId)
     {
-        var candidate = await _context
+        var candidate = await context
             .Candidates
             .AsNoTracking()
             .Include(t => t.Periodicity)
@@ -220,7 +211,7 @@ public class SupabaseRepository : ISupabaseRepository
 
     public async Task<PeriodicitySettings?> WriteReadUserSubscribe(string userId, PeriodicitySettings setting)
     {
-        var candidate = await _context
+        var candidate = await context
             .Candidates
             .Include(t => t.Periodicity)
             .FirstOrDefaultAsync(t => t.Id == userId);
@@ -242,7 +233,7 @@ public class SupabaseRepository : ISupabaseRepository
                 candidate.Periodicity.Settings = setting;
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return setting;
         }
@@ -254,7 +245,7 @@ public class SupabaseRepository : ISupabaseRepository
     {
         try
         {
-            var candidate = await _context
+            var candidate = await context
                 .Candidates
                 .Include(t => t.Periodicity)
                 .FirstOrDefaultAsync(t => t.Id == userId);
@@ -268,13 +259,13 @@ public class SupabaseRepository : ISupabaseRepository
                     Id = Guid.NewGuid().ToString()
                 };
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 return true;
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
+            logger.LogError(e.Message);
             throw;
         }
 
@@ -285,7 +276,7 @@ public class SupabaseRepository : ISupabaseRepository
     {
         try
         {
-            var userInfo = await _context
+            var userInfo = await context
                 .SubscribedVacancies
                 .AsNoTracking()
                 .Where(t => t.UserId == userId)
@@ -315,7 +306,7 @@ public class SupabaseRepository : ISupabaseRepository
     {
         try
         {
-            return await _context
+            return await context
                 .SubscribedVacancies
                 .Include(t => t.Candidates)
                 .ThenInclude(t => t.Periodicity)
@@ -325,14 +316,14 @@ public class SupabaseRepository : ISupabaseRepository
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
+            logger.LogError(e.Message);
             throw;
         }
     }
 
     public async Task<List<Vacancy>> ReadExistsVacancy()
     {
-        return await _context
+        return await context
             .Vacancies
             .AsNoTracking()
             .ToListAsync();
@@ -341,13 +332,13 @@ public class SupabaseRepository : ISupabaseRepository
 
     public async Task WriteNewVacancy(List<Vacancy> postedVacancy)
     {
-        await _context.Vacancies.AddRangeAsync(postedVacancy);
-        await _context.SaveChangesAsync();
+        await context.Vacancies.AddRangeAsync(postedVacancy);
+        await context.SaveChangesAsync();
     }
 
     public async Task<long?> GetTelegramUserId(string userId)
     {
-        var user = await _context.Candidates.AsNoTracking().FirstOrDefaultAsync(t => t.Id == userId);
+        var user = await context.Candidates.AsNoTracking().FirstOrDefaultAsync(t => t.Id == userId);
 
         if (user != null)
         {

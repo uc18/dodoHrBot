@@ -12,26 +12,16 @@ using Microsoft.Extensions.Options;
 
 namespace DodoBot.Services;
 
-public class AuthenticateService : IAuthenticateService
+public class AuthenticateService(HttpClient httpClient, IOptions<ApplicationOptions> options)
+    : IAuthenticateService
 {
-    private readonly HttpClient _httpClient;
+    private string AccessToken { get; set; } = options.Value.HuntflowTokens.HuntflowAccessTokenApi;
 
-    private string AccessToken { get; set; }
+    private string RefreshToken { get; set; } = options.Value.HuntflowTokens.HuntflowRefreshTokenApi;
 
-    private string RefreshToken { get; set; }
+    private string HuntflowDodoBrandsApiUrl { get; } = options.Value.HuntflowApiUrl;
 
-    private string HuntflowDodoBrandsApiUrl { get; }
-
-    private DateTime _expirationDate;
-
-    public AuthenticateService(HttpClient httpClient, IOptions<ApplicationOptions> options)
-    {
-        _httpClient = httpClient;
-        _expirationDate = DateTime.UtcNow.AddSeconds(options.Value.HuntflowTokens.HuntflowTokenLifeTime);
-        AccessToken = options.Value.HuntflowTokens.HuntflowAccessTokenApi;
-        RefreshToken = options.Value.HuntflowTokens.HuntflowRefreshTokenApi;
-        HuntflowDodoBrandsApiUrl = options.Value.HuntflowApiUrl;
-    }
+    private DateTime _expirationDate = DateTime.UtcNow.AddSeconds(options.Value.HuntflowTokens.HuntflowTokenLifeTime);
 
     public string GetExistsAccessToken()
     {
@@ -44,10 +34,10 @@ public class AuthenticateService : IAuthenticateService
         {
             Token = RefreshToken
         });
-        _httpClient.DefaultRequestHeaders.Authorization =
+        httpClient.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", AccessToken);
 
-        var request = await _httpClient.PostAsync(
+        var request = await httpClient.PostAsync(
             $"{HuntflowDodoBrandsApiUrl}{UriApiConstants.RefreshTokenUri}", content);
 
         if (request.IsSuccessStatusCode)

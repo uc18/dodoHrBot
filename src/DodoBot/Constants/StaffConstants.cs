@@ -18,4 +18,6 @@ public static class StaffConstants
     public static readonly string VacanciesNotFound = "Вакансий под твои запросы нет";
 
     public static readonly string DodoUrl = "https://dodoteam.ru/vacancy/?vacancyId=";
+
+    public static readonly string SetEnableOrDisableNotify = "Тут ты можешь включить или выключить рассылку: ";
 }

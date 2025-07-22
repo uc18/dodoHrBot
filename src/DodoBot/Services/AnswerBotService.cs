@@ -69,7 +69,8 @@ public class AnswerBotService(
                             var setting = await supabaseRepository.ReadUserSubscribeOptions(userId);
                             var frequencyButton =
                                 buttonProvider.ButtonsFrequencySetting(setting);
-                            await messageService.SendInlineMessage(update.Chat.Id, "ttt", frequencyButton);
+                            await messageService.SendInlineMessage(update.Chat.Id,
+                                StaffConstants.SetEnableOrDisableNotify, frequencyButton);
                         }
                     }
                     break;
@@ -424,7 +425,7 @@ public class AnswerBotService(
                     {
                         var timingButton = buttonProvider.ButtonsFrequencySetting(result);
                         await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
-                            callbackQuery.Message.MessageId, "Выбери частоту рассылки: ", timingButton);
+                            callbackQuery.Message.MessageId, StaffConstants.SetEnableOrDisableNotify, timingButton);
                     }
                     else
                     {
@@ -433,7 +434,7 @@ public class AnswerBotService(
 
                         var timingButton = buttonProvider.ButtonsFrequencySetting(result);
                         await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
-                            callbackQuery.Message.MessageId, "Выбери частоту рассылки: ", timingButton);
+                            callbackQuery.Message.MessageId, StaffConstants.SetEnableOrDisableNotify, timingButton);
                     }
                 }
 

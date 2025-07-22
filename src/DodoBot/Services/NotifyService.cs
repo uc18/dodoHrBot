@@ -12,29 +12,17 @@ using Repository.Entities;
 
 namespace DodoBot.Services;
 
-public class NotifyService : INotifyService
+public class NotifyService(
+    HuntflowService service,
+    ISupabaseRepository supabaseRepository,
+    DodoBotMessageService dodoBotMessageService,
+    ButtonProvider buttonProvider)
+    : INotifyService
 {
-    private readonly HuntflowService _service;
-
-    private readonly ISupabaseRepository _supabaseRepository;
-
-    private readonly DodoBotMessageService _dodoBotMessageService;
-
-    private readonly ButtonProvider _buttonProvider;
-
-    public NotifyService(HuntflowService service, ISupabaseRepository supabaseRepository,
-        DodoBotMessageService dodoBotMessageService, ButtonProvider buttonProvider)
-    {
-        _service = service;
-        _supabaseRepository = supabaseRepository;
-        _dodoBotMessageService = dodoBotMessageService;
-        _buttonProvider = buttonProvider;
-    }
-
     public async Task SendNotifyAllUsers()
     {
-        var allVacancies = await _service.GetAllVacancies();
-        var postedVacancy = await _supabaseRepository.ReadExistsVacancy();
+        var allVacancies = await service.GetAllVacancies();
+        var postedVacancy = await supabaseRepository.ReadExistsVacancy();
 
         var vacancicesByList = allVacancies.ToList();
         if (vacancicesByList.Count > 0)
@@ -83,7 +71,7 @@ public class NotifyService : INotifyService
                 }
             }
 
-            var allUsers = await _supabaseRepository.GetAllEnabledUsers();
+            var allUsers = await supabaseRepository.GetAllEnabledUsers();
             var usersWithVacancy = new Dictionary<string, List<VacancyToSend>>();
 
             foreach (var user in allUsers)
@@ -114,12 +102,12 @@ public class NotifyService : INotifyService
 
             if (usersWithVacancy.Count > 0)
             {
-                var startButton = _buttonProvider.GetFrequencyButton();
+                var startButton = buttonProvider.GetFrequencyButton();
                 var perhapsPostedVacancies = new List<int>();
                 foreach (var userInfo in usersWithVacancy)
                 {
                     var sb = new StringBuilder();
-                    var telegramId = await _supabaseRepository.GetTelegramUserId(userInfo.Key);
+                    var telegramId = await supabaseRepository.GetTelegramUserId(userInfo.Key);
 
                     if (telegramId.HasValue)
                     {
@@ -144,13 +132,13 @@ public class NotifyService : INotifyService
 
                         var result = sb.ToString();
 
-                        await _dodoBotMessageService.SendInlineMessage(telegramId.Value, result, startButton);
+                        await dodoBotMessageService.SendInlineMessage(telegramId.Value, result, startButton);
                     }
                 }
 
                 var distinctVacancyId = perhapsPostedVacancies.Distinct().ToList();
 
-                await _supabaseRepository.WriteNewVacancy(distinctVacancyId.Select(t => new Vacancy
+                await supabaseRepository.WriteNewVacancy(distinctVacancyId.Select(t => new Vacancy
                 {
                     Id = Guid.NewGuid().ToString(),
                     VacancyId = t

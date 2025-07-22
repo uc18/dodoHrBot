@@ -5,20 +5,13 @@ using DodoBot.Models.Huntflow;
 
 namespace DodoBot.Services;
 
-public class HuntflowService
+public class HuntflowService(IHuntflowApi huntflowApi)
 {
-    private readonly IHuntflowApi _huntflowApi;
-
-    public HuntflowService(IHuntflowApi huntflowApi)
-    {
-        _huntflowApi = huntflowApi;
-    }
-
     public async Task<IEnumerable<HuntflowVacancy>> GetAllVacancies()
     {
         var pages = 1;
         var totalPages = 0;
-        var notSortedVacancy = await _huntflowApi.GetVacanciesAsync(pages);
+        var notSortedVacancy = await huntflowApi.GetVacanciesAsync(pages);
 
         var allVacancies = new List<HuntflowVacancy>();
 
@@ -30,7 +23,7 @@ public class HuntflowService
                 do
                 {
                     pages++;
-                    var addingVacancy = await _huntflowApi.GetVacanciesAsync(pages);
+                    var addingVacancy = await huntflowApi.GetVacanciesAsync(pages);
 
                     if (addingVacancy != null)
                     {
