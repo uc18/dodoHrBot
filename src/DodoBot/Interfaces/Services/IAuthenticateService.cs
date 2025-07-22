@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace DodoBot.Interfaces;
+namespace DodoBot.Interfaces.Services;
 
 public interface IAuthenticateService
 {

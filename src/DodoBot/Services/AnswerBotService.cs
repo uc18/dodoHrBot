@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using DodoBot.Constants;
 using DodoBot.Extensions;
 using DodoBot.Interfaces;
+using DodoBot.Interfaces.Integrations;
+using DodoBot.Interfaces.Repositories;
 using DodoBot.Models;
 using DodoBot.Options;
 using DodoBot.Providers;
@@ -404,9 +406,14 @@ public class AnswerBotService(
                             var result = await supabaseRepository.WriteReadUserSubscribe(userId, newSettings.Value);
 
                             var timingButton = buttonProvider.ButtonsFrequencySetting(result);
+
+                            var textFrequency = newSettings.Value == PeriodicitySettings.Enable
+                                ? StaffConstants.YouAreEnableNotify
+                                : StaffConstants.YouAreDisableNotify;
+
                             await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
                                 callbackQuery.Message.MessageId,
-                                "Теперь у тебя другая частота рассылки и она отмечена ✅", timingButton);
+                                textFrequency, timingButton);
                         }
                     }
                 }

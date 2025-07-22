@@ -114,7 +114,7 @@ public class ButtonProvider
                 {
                     new InlineKeyboardButton
                     {
-                        Text = "Назад",
+                        Text = "⬅️Назад",
                         CallbackData = "start"
                     }
                 }
@@ -165,7 +165,7 @@ public class ButtonProvider
         {
             new InlineKeyboardButton
             {
-                Text = "Готово",
+                Text = "✅Готово",
                 CallbackData = "set"
             }
         });
@@ -174,7 +174,7 @@ public class ButtonProvider
         {
             new InlineKeyboardButton
             {
-                Text = "Назад",
+                Text = "⬅️Назад",
                 CallbackData = "viewvacancy"
             }
         });
@@ -191,6 +191,14 @@ public class ButtonProvider
         {
             Keyboard = new List<List<InlineKeyboardButton>>
             {
+                new List<InlineKeyboardButton>
+                {
+                    new InlineKeyboardButton
+                    {
+                        Text = "Просмотреть открытые вакансии",
+                        CallbackData = "sendvacancies"
+                    }
+                },
                 new List<InlineKeyboardButton>
                 {
                     new InlineKeyboardButton
@@ -213,7 +221,7 @@ public class ButtonProvider
                 {
                     new InlineKeyboardButton
                     {
-                        Text = "Назад",
+                        Text = "⬅️Назад",
                         CallbackData = "start"
                     }
                 }

@@ -5,6 +5,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using DodoBot.Constants;
 using DodoBot.Interfaces;
+using DodoBot.Interfaces.Integrations;
+using DodoBot.Interfaces.Services;
 using DodoBot.Models.Huntflow.Response;
 using DodoBot.Options;
 using Microsoft.Extensions.Logging;

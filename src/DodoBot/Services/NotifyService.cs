@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using DodoBot.Constants;
 using DodoBot.Interfaces;
+using DodoBot.Interfaces.Repositories;
+using DodoBot.Interfaces.Services;
 using DodoBot.Models.Dto;
 using DodoBot.Models.Huntflow;
 using DodoBot.Providers;
