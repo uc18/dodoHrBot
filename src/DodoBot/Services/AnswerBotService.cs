@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using DodoBot.Constants;
 using DodoBot.Extensions;
-using DodoBot.Interfaces;
 using DodoBot.Interfaces.Integrations;
 using DodoBot.Interfaces.Repositories;
 using DodoBot.Models;
@@ -188,10 +187,20 @@ public class AnswerBotService(
                         }
                     }
 
-                    var vacancyText = VacancyExtension.PrepareVacancyText(finalVacancies);
+                    if (finalVacancies.Any())
+                    {
+                        var vacancyText = VacancyExtension.PrepareVacancyText(finalVacancies);
 
-                    await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
-                        callbackQuery.Message.MessageId, vacancyText, mainMenu);
+                        await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                            callbackQuery.Message.MessageId, vacancyText, mainMenu);
+                    }
+                    else
+                    {
+                        await messageService.ChangeAllContentInMessage(callbackQuery.Message.Chat.Id,
+                            callbackQuery.Message.MessageId, StaffConstants.VacanciesNotFound,
+                            mainMenu);
+                    }
+
                 }
                 else
                 {

@@ -156,7 +156,7 @@ public class ButtonProvider
             {
                 new InlineKeyboardButton
                 {
-                    Text = existSpecialty.Contains(stream.Id) ? "✅" + stream.Name : "☑️" + stream.Name,
+                    Text = existSpecialty.Contains(stream.Id) ? "✅" + stream.Name : "⬜️" + stream.Name,
                     CallbackData = $"{typeOfStream}-{stream.Id}"
                 }
             }).ToList();
@@ -203,7 +203,7 @@ public class ButtonProvider
                 {
                     new InlineKeyboardButton
                     {
-                        Text = "Выбери частоту рассылки",
+                        Text = "Управление подпиской",
                         CallbackData = "frequency"
                     }
                 }
