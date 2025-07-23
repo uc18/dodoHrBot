@@ -114,7 +114,7 @@ public class ButtonProvider
                 {
                     new InlineKeyboardButton
                     {
-                        Text = "⬅️Назад",
+                        Text = "⬅️ Назад",
                         CallbackData = "start"
                     }
                 }
@@ -165,7 +165,7 @@ public class ButtonProvider
         {
             new InlineKeyboardButton
             {
-                Text = "✅Готово",
+                Text = "✅ Готово",
                 CallbackData = "set"
             }
         });
@@ -174,7 +174,7 @@ public class ButtonProvider
         {
             new InlineKeyboardButton
             {
-                Text = "⬅️Назад",
+                Text = "⬅️ Назад",
                 CallbackData = "viewvacancy"
             }
         });
@@ -221,7 +221,7 @@ public class ButtonProvider
                 {
                     new InlineKeyboardButton
                     {
-                        Text = "⬅️Назад",
+                        Text = "⬅️ Назад",
                         CallbackData = "start"
                     }
                 }
