@@ -3,11 +3,28 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <ImplicitUsings>disable</ImplicitUsings>
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Repository\Repository.csproj" />
       <ProjectReference Include="..\TelegramLibrary\TelegramLibrary.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Repository\obj\project.assets.json" />
+      <_ContentIncludedByDefault Remove="Repository\obj\project.packagespec.json" />
+      <_ContentIncludedByDefault Remove="Repository\obj\Repository.csproj.nuget.dgspec.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.14" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.14">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
     </ItemGroup>
 
 </Project>
